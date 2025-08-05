@@ -1,11 +1,23 @@
-
-// import styles from "./page.module.css";
+import {
+  Header,
+  HeroCarousel,
+  ContentTabs,
+  PremiereSection,
+  PricingSection,
+  PlanModal,
+  Footer
+} from './core/ui';
 
 export default function Home() {
   return (
-    <div >
-
-
-    </div>
+    <>
+      <Header />
+      <HeroCarousel />
+      <ContentTabs />
+      <PremiereSection />
+      <PricingSection />
+      <Footer />
+      <PlanModal />
+    </>
   );
 }
