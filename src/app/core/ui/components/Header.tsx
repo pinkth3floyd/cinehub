@@ -71,10 +71,10 @@ export default function Header() {
 
               {/* header auth */}
               <div className="header__auth">
-                <SearchBar 
+                {/* <SearchBar 
                   placeholder="Search..."
                   className="header__search-container"
-                />
+                /> */}
 
                 {/* language dropdown */}
                 <div className="header__lang">
