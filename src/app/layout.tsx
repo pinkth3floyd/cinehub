@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
+import TanstackProvider from "./core/ui/components/TanstackProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,6 +30,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+    <TanstackProvider>
+      {/* <UseAnalytics /> */}
     <html lang="en">
       <head>
         {/* CSS */}
@@ -58,5 +61,6 @@ export default function RootLayout({
         <Script src="/core/assets/js/main.js" strategy="afterInteractive" />
       </body>
     </html>
+    </TanstackProvider>
   );
 }

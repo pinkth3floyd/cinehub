@@ -5,21 +5,18 @@ import { useRouter } from 'next/navigation';
 import AdminLayout from '../../core/ui/components/AdminLayout';
 import CrudTable from '../../core/ui/components/CrudTable';
 import SearchFilter from '../../core/ui/components/SearchFilter';
-import { getUsers, deleteUser } from '../../core/entities/user/actions';
+import { getTags, deleteTag } from '../../core/entities/tags/actions';
 
-interface User {
+interface Tag {
   id: string;
-  email: string;
-  username: string;
-  fullName: string;
-  role: string;
-  status: string;
+  name: string;
+  slug: string;
   createdAt: Date;
 }
 
-const UsersPage = () => {
+const TagsPage = () => {
   const router = useRouter();
-  const [users, setUsers] = useState<User[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -30,25 +27,29 @@ const UsersPage = () => {
     totalPages: 0
   });
 
-  const loadUsers = async (page: number = 1, search?: string) => {
+  const loadTags = async (page: number = 1, search?: string) => {
     setLoading(true);
     try {
-      const result = await getUsers(page, 10, search);
+      const result = await getTags({
+        page,
+        limit: 10,
+        search
+      });
       if (result.success && result.data) {
-        setUsers(result.data.users);
+        setTags(result.data.tags);
         setPagination(result.data.pagination);
       } else {
-        console.error('Failed to load users:', result.error);
+        console.error('Failed to load tags:', result.error);
       }
     } catch (error) {
-      console.error('Error loading users:', error);
+      console.error('Error loading tags:', error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadUsers(currentPage, searchTerm);
+    loadTags(currentPage, searchTerm);
   }, [currentPage, searchTerm]);
 
   const handleSearch = (search: string) => {
@@ -58,34 +59,30 @@ const UsersPage = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      const result = await deleteUser(id);
+      const result = await deleteTag(id);
       if (result.success) {
-        // Reload users after deletion
-        loadUsers(currentPage, searchTerm);
+        loadTags(currentPage, searchTerm);
       } else {
-        alert('Failed to delete user: ' + result.error);
+        alert('Failed to delete tag: ' + result.error);
       }
     } catch (error) {
-      console.error('Error deleting user:', error);
-      alert('Error deleting user');
+      console.error('Error deleting tag:', error);
+      alert('Error deleting tag');
     }
   };
 
   const handleEdit = (id: string) => {
-    router.push(`/admin/users/edit/${id}`);
+    router.push(`/admin/tags/edit/${id}`);
   };
 
   const handleView = (id: string) => {
-    router.push(`/admin/users/view/${id}`);
+    router.push(`/admin/tags/view/${id}`);
   };
 
   const columns = [
     { key: 'id', label: 'ID' },
-    { key: 'fullName', label: 'Full Name' },
-    { key: 'email', label: 'Email' },
-    { key: 'username', label: 'Username' },
-    { key: 'role', label: 'Role' },
-    { key: 'status', label: 'Status' },
+    { key: 'name', label: 'Name' },
+    { key: 'slug', label: 'Slug' },
     { 
       key: 'createdAt', 
       label: 'Created At',
@@ -97,53 +94,32 @@ const UsersPage = () => {
     }
   ];
 
-  const filterOptions = [
-    {
-      name: 'role',
-      label: 'Role',
-      options: [
-        { value: 'admin', label: 'Admin' },
-        { value: 'user', label: 'User' }
-      ]
-    },
-    {
-      name: 'status',
-      label: 'Status',
-      options: [
-        { value: 'active', label: 'Active' },
-        { value: 'inactive', label: 'Inactive' },
-        { value: 'banned', label: 'Banned' }
-      ]
-    }
-  ];
-
   return (
     <AdminLayout>
       <div className="row">
         <div className="col-12">
           <div className="main__title">
-            <h2>Users Management</h2>
+            <h2>Tags Management</h2>
           </div>
         </div>
       </div>
 
       <SearchFilter
         onSearch={handleSearch}
-        placeholder="Search users by name, email, or username..."
-        filters={filterOptions}
+        placeholder="Search tags by name..."
       />
 
       <div className="row">
         <div className="col-12">
           <CrudTable
-            title="All Users"
-            icon="ti ti-users"
-            data={users}
+            title="All Tags"
+            icon="ti ti-tag"
+            data={tags}
             columns={columns}
             onDelete={handleDelete}
             onEdit={handleEdit}
             onView={handleView}
-            addLink="/admin/users/add"
+            addLink="/admin/tags/add"
             isLoading={loading}
             pagination={{
               page: pagination.page,
@@ -159,4 +135,4 @@ const UsersPage = () => {
   );
 };
 
-export default UsersPage; 
+export default TagsPage; 

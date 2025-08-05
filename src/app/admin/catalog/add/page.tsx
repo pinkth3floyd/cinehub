@@ -1,0 +1,167 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import AdminLayout from '../../../core/ui/components/AdminLayout';
+import CrudForm from '../../../core/ui/components/CrudForm';
+import { createMovie } from '../../../core/entities/movies/actions';
+import { getTypes } from '../../../core/entities/type/actions';
+import { getYears } from '../../../core/entities/year/actions';
+
+const AddMoviePage = () => {
+  const [types, setTypes] = useState<any[]>([]);
+  const [years, setYears] = useState<any[]>([]);
+
+  useEffect(() => {
+    const loadOptions = async () => {
+      try {
+        const [typesResult, yearsResult] = await Promise.all([
+          getTypes(),
+          getYears()
+        ]);
+
+        if (typesResult.success && typesResult.data) {
+          setTypes(typesResult.data);
+        }
+
+        if (yearsResult.success && yearsResult.data) {
+          setYears(yearsResult.data);
+        }
+      } catch (error) {
+        console.error('Error loading options:', error);
+      }
+    };
+
+    loadOptions();
+  }, []);
+
+  const fields = [
+    {
+      name: 'title',
+      label: 'Title',
+      type: 'text' as const,
+      required: true,
+      placeholder: 'Enter movie title'
+    },
+    {
+      name: 'slug',
+      label: 'Slug',
+      type: 'text' as const,
+      required: true,
+      placeholder: 'Enter URL slug (e.g., the-lost-city)'
+    },
+    {
+      name: 'description',
+      label: 'Description',
+      type: 'textarea' as const,
+      required: false,
+      placeholder: 'Enter movie description'
+    },
+    {
+      name: 'content',
+      label: 'Content',
+      type: 'textarea' as const,
+      required: false,
+      placeholder: 'Enter detailed content'
+    },
+    {
+      name: 'poster',
+      label: 'Poster URL',
+      type: 'text' as const,
+      required: false,
+      placeholder: 'Enter poster image URL'
+    },
+    {
+      name: 'banner',
+      label: 'Banner URL',
+      type: 'text' as const,
+      required: false,
+      placeholder: 'Enter banner image URL'
+    },
+    {
+      name: 'trailer',
+      label: 'Trailer URL',
+      type: 'text' as const,
+      required: false,
+      placeholder: 'Enter trailer video URL'
+    },
+    {
+      name: 'duration',
+      label: 'Duration (minutes)',
+      type: 'number' as const,
+      required: false,
+      placeholder: 'Enter duration in minutes'
+    },
+    {
+      name: 'rating',
+      label: 'Rating',
+      type: 'number' as const,
+      required: false,
+      placeholder: 'Enter rating (0-10)',
+      validation: (value: unknown) => {
+        const numValue = Number(value);
+        if (value && (numValue < 0 || numValue > 10)) {
+          return 'Rating must be between 0 and 10';
+        }
+        return null;
+      }
+    },
+    {
+      name: 'releaseDate',
+      label: 'Release Date',
+      type: 'date' as const,
+      required: false
+    },
+    {
+      name: 'status',
+      label: 'Status',
+      type: 'select' as const,
+      required: true,
+      options: [
+        { value: 'draft', label: 'Draft' },
+        { value: 'published', label: 'Published' },
+        { value: 'archived', label: 'Archived' }
+      ]
+    },
+    {
+      name: 'featured',
+      label: 'Featured',
+      type: 'checkbox' as const,
+      required: false
+    },
+    {
+      name: 'typeId',
+      label: 'Type',
+      type: 'select' as const,
+      required: true,
+      options: types.map(type => ({ value: type.id, label: type.name }))
+    },
+    {
+      name: 'yearId',
+      label: 'Year',
+      type: 'select' as const,
+      required: false,
+      options: years.map(year => ({ value: year.id, label: year.year.toString() }))
+    }
+  ];
+
+  const handleSubmit = async (data: any) => {
+    try {
+      const result = await createMovie(data);
+      return result;
+    } catch {
+      return { success: false, error: 'Failed to create movie' };
+    }
+  };
+
+  return (
+    <AdminLayout>
+      <CrudForm
+        title="Add New Movie"
+        fields={fields}
+        onSubmit={handleSubmit}
+      />
+    </AdminLayout>
+  );
+};
+
+export default AddMoviePage; 

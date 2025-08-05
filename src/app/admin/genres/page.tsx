@@ -5,21 +5,19 @@ import { useRouter } from 'next/navigation';
 import AdminLayout from '../../core/ui/components/AdminLayout';
 import CrudTable from '../../core/ui/components/CrudTable';
 import SearchFilter from '../../core/ui/components/SearchFilter';
-import { getUsers, deleteUser } from '../../core/entities/user/actions';
+import { getGenres, deleteGenre } from '../../core/entities/genre/actions';
 
-interface User {
+interface Genre {
   id: string;
-  email: string;
-  username: string;
-  fullName: string;
-  role: string;
-  status: string;
+  name: string;
+  slug: string;
+  description: string | null;
   createdAt: Date;
 }
 
-const UsersPage = () => {
+const GenresPage = () => {
   const router = useRouter();
-  const [users, setUsers] = useState<User[]>([]);
+  const [genres, setGenres] = useState<Genre[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -30,25 +28,29 @@ const UsersPage = () => {
     totalPages: 0
   });
 
-  const loadUsers = async (page: number = 1, search?: string) => {
+  const loadGenres = async (page: number = 1, search?: string) => {
     setLoading(true);
     try {
-      const result = await getUsers(page, 10, search);
+      const result = await getGenres({
+        page,
+        limit: 10,
+        search
+      });
       if (result.success && result.data) {
-        setUsers(result.data.users);
+        setGenres(result.data.genres);
         setPagination(result.data.pagination);
       } else {
-        console.error('Failed to load users:', result.error);
+        console.error('Failed to load genres:', result.error);
       }
     } catch (error) {
-      console.error('Error loading users:', error);
+      console.error('Error loading genres:', error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadUsers(currentPage, searchTerm);
+    loadGenres(currentPage, searchTerm);
   }, [currentPage, searchTerm]);
 
   const handleSearch = (search: string) => {
@@ -58,34 +60,39 @@ const UsersPage = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      const result = await deleteUser(id);
+      const result = await deleteGenre(id);
       if (result.success) {
-        // Reload users after deletion
-        loadUsers(currentPage, searchTerm);
+        loadGenres(currentPage, searchTerm);
       } else {
-        alert('Failed to delete user: ' + result.error);
+        alert('Failed to delete genre: ' + result.error);
       }
     } catch (error) {
-      console.error('Error deleting user:', error);
-      alert('Error deleting user');
+      console.error('Error deleting genre:', error);
+      alert('Error deleting genre');
     }
   };
 
   const handleEdit = (id: string) => {
-    router.push(`/admin/users/edit/${id}`);
+    router.push(`/admin/genres/edit/${id}`);
   };
 
   const handleView = (id: string) => {
-    router.push(`/admin/users/view/${id}`);
+    router.push(`/admin/genres/view/${id}`);
   };
 
   const columns = [
     { key: 'id', label: 'ID' },
-    { key: 'fullName', label: 'Full Name' },
-    { key: 'email', label: 'Email' },
-    { key: 'username', label: 'Username' },
-    { key: 'role', label: 'Role' },
-    { key: 'status', label: 'Status' },
+    { key: 'name', label: 'Name' },
+    { key: 'slug', label: 'Slug' },
+    { 
+      key: 'description', 
+      label: 'Description',
+      render: (value: string) => (
+        <div className="dashbox__table-text">
+          {value && value.length > 50 ? `${value.substring(0, 50)}...` : value || '-'}
+        </div>
+      )
+    },
     { 
       key: 'createdAt', 
       label: 'Created At',
@@ -97,53 +104,32 @@ const UsersPage = () => {
     }
   ];
 
-  const filterOptions = [
-    {
-      name: 'role',
-      label: 'Role',
-      options: [
-        { value: 'admin', label: 'Admin' },
-        { value: 'user', label: 'User' }
-      ]
-    },
-    {
-      name: 'status',
-      label: 'Status',
-      options: [
-        { value: 'active', label: 'Active' },
-        { value: 'inactive', label: 'Inactive' },
-        { value: 'banned', label: 'Banned' }
-      ]
-    }
-  ];
-
   return (
     <AdminLayout>
       <div className="row">
         <div className="col-12">
           <div className="main__title">
-            <h2>Users Management</h2>
+            <h2>Genres Management</h2>
           </div>
         </div>
       </div>
 
       <SearchFilter
         onSearch={handleSearch}
-        placeholder="Search users by name, email, or username..."
-        filters={filterOptions}
+        placeholder="Search genres by name..."
       />
 
       <div className="row">
         <div className="col-12">
           <CrudTable
-            title="All Users"
-            icon="ti ti-users"
-            data={users}
+            title="All Genres"
+            icon="ti ti-category"
+            data={genres}
             columns={columns}
             onDelete={handleDelete}
             onEdit={handleEdit}
             onView={handleView}
-            addLink="/admin/users/add"
+            addLink="/admin/genres/add"
             isLoading={loading}
             pagination={{
               page: pagination.page,
@@ -159,4 +145,4 @@ const UsersPage = () => {
   );
 };
 
-export default UsersPage; 
+export default GenresPage; 

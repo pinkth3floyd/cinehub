@@ -63,14 +63,26 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen = true }) => {
           </li>
 
           <li className="sidebar__nav-item">
-            <Link href="/admin/comments" className="sidebar__nav-link">
-              <i className="ti ti-message"></i> <span>Comments</span>
+            <Link href="/admin/reviews" className="sidebar__nav-link">
+              <i className="ti ti-message"></i> <span>Reviews</span>
             </Link>
           </li>
 
           <li className="sidebar__nav-item">
-            <Link href="/admin/reviews" className="sidebar__nav-link">
-              <i className="ti ti-star-half-filled"></i> <span>Reviews</span>
+            <Link href="/admin/genres" className="sidebar__nav-link">
+              <i className="ti ti-category"></i> <span>Genres</span>
+            </Link>
+          </li>
+
+          <li className="sidebar__nav-item">
+            <Link href="/admin/types" className="sidebar__nav-link">
+              <i className="ti ti-layout"></i> <span>Types</span>
+            </Link>
+          </li>
+
+          <li className="sidebar__nav-item">
+            <Link href="/admin/tags" className="sidebar__nav-link">
+              <i className="ti ti-tag"></i> <span>Tags</span>
             </Link>
           </li>
 

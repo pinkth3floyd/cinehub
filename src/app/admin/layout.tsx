@@ -30,7 +30,7 @@ export default function AdminLayout({
   return (
     <html lang="en">
       <head>
-        {/* CSS */}
+        {/* CSS - Admin only */}
         <link rel="stylesheet" href="/core/assets/css/bootstrap.min.css" />
         <link rel="stylesheet" href="/core/assets/css/slimselect.css" />
         <link rel="stylesheet" href="/core/assets/css/admin.css" />
@@ -41,7 +41,7 @@ export default function AdminLayout({
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         {children}
         
-        {/* JS */}
+        {/* JS - Admin only, no main site JS */}
         <Script src="/core/assets/js/bootstrap.bundle.min.js" strategy="afterInteractive" />
         <Script src="/core/assets/js/slimselect.min.js" strategy="afterInteractive" />
         <Script src="/core/assets/js/smooth-scrollbar.js" strategy="afterInteractive" />

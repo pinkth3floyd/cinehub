@@ -1,94 +1,173 @@
-import React from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import AdminLayout from '../../core/ui/components/AdminLayout';
-import Dashbox from '../../core/ui/components/Dashbox';
+import CrudTable from '../../core/ui/components/CrudTable';
+import SearchFilter from '../../core/ui/components/SearchFilter';
+import { getMovies, deleteMovie } from '../../core/entities/movies/actions';
+
+interface Movie {
+  id: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  poster: string | null;
+  rating: number | null;
+  status: string;
+  featured: boolean;
+  typeId: string;
+  yearId: string | null;
+  createdAt: Date;
+}
 
 const CatalogPage = () => {
+  const router = useRouter();
+  const [movies, setMovies] = useState<Movie[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0
+  });
 
-  const catalogItems = [
-    { id: 241, title: 'The Lost City', category: 'Movie', rating: 9.2, status: 'Active' },
-    { id: 825, title: 'Undercurrents', category: 'Movie', rating: 9.1, status: 'Active' },
-    { id: 9271, title: 'Tales from the Underworld', category: 'TV Series', rating: 9.0, status: 'Active' },
-    { id: 635, title: 'The Unseen World', category: 'TV Series', rating: 8.9, status: 'Active' },
-    { id: 826, title: 'Redemption Road', category: 'TV Series', rating: 8.9, status: 'Active' },
-    { id: 824, title: 'I Dream in Another Language', category: 'TV Series', rating: 7.2, status: 'Active' },
-    { id: 602, title: 'Benched', category: 'Movie', rating: 6.3, status: 'Active' },
-    { id: 538, title: 'Whitney', category: 'TV Show', rating: 8.4, status: 'Active' },
-    { id: 129, title: 'Blindspotting', category: 'Anime', rating: 9.0, status: 'Active' },
-    { id: 360, title: 'Another', category: 'Movie', rating: 7.7, status: 'Active' },
+  const loadMovies = async (page: number = 1, search?: string) => {
+    setLoading(true);
+    try {
+      const result = await getMovies({
+        page,
+        limit: 10,
+        search
+      });
+      if (result.success && result.data) {
+        setMovies(result.data.movies);
+        setPagination(result.data.pagination);
+      } else {
+        console.error('Failed to load movies:', result.error);
+      }
+    } catch (error) {
+      console.error('Error loading movies:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadMovies(currentPage, searchTerm);
+  }, [currentPage, searchTerm]);
+
+  const handleSearch = (search: string) => {
+    setSearchTerm(search);
+    setCurrentPage(1);
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const result = await deleteMovie(id);
+      if (result.success) {
+        // Reload movies after deletion
+        loadMovies(currentPage, searchTerm);
+      } else {
+        alert('Failed to delete movie: ' + result.error);
+      }
+    } catch (error) {
+      console.error('Error deleting movie:', error);
+      alert('Error deleting movie');
+    }
+  };
+
+  const handleEdit = (id: string) => {
+    router.push(`/admin/catalog/edit/${id}`);
+  };
+
+  const handleView = (id: string) => {
+    router.push(`/admin/catalog/view/${id}`);
+  };
+
+  const columns = [
+    { key: 'id', label: 'ID' },
+    { key: 'title', label: 'Title' },
+    { key: 'rating', label: 'Rating' },
+    { key: 'status', label: 'Status' },
+    { 
+      key: 'featured', 
+      label: 'Featured',
+      render: (value: boolean) => (
+        <span className={`badge ${value ? 'badge-success' : 'badge-secondary'}`}>
+          {value ? 'Yes' : 'No'}
+        </span>
+      )
+    },
+    { 
+      key: 'createdAt', 
+      label: 'Created At',
+      render: (value: Date) => (
+        <div className="dashbox__table-text">
+          {new Date(value).toLocaleDateString()}
+        </div>
+      )
+    }
+  ];
+
+  const filterOptions = [
+    {
+      name: 'status',
+      label: 'Status',
+      options: [
+        { value: 'draft', label: 'Draft' },
+        { value: 'published', label: 'Published' },
+        { value: 'archived', label: 'Archived' }
+      ]
+    },
+    {
+      name: 'featured',
+      label: 'Featured',
+      options: [
+        { value: 'true', label: 'Featured' },
+        { value: 'false', label: 'Not Featured' }
+      ]
+    }
   ];
 
   return (
     <AdminLayout>
-      {/* main title */}
       <div className="row">
         <div className="col-12">
           <div className="main__title">
-            <h2>Catalog</h2>
-            <a href="/admin/add-item" className="main__title-link">add item</a>
+            <h2>Catalog Management</h2>
           </div>
         </div>
       </div>
-      {/* end main title */}
+
+      <SearchFilter
+        onSearch={handleSearch}
+        placeholder="Search movies by title..."
+        filters={filterOptions}
+      />
 
       <div className="row">
         <div className="col-12">
-          <Dashbox
-            title="All Items"
+          <CrudTable
+            title="All Movies"
             icon="ti ti-movie"
-
-          >
-            <div className="dashbox__table-wrap">
-              <table className="dashbox__table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>TITLE</th>
-                    <th>CATEGORY</th>
-                    <th>RATING</th>
-                    <th>STATUS</th>
-                    <th>ACTIONS</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {catalogItems.map((item) => (
-                    <tr key={item.id}>
-                      <td>
-                        <div className="dashbox__table-text dashbox__table-text--grey">{item.id}</div>
-                      </td>
-                      <td>
-                        <div className="dashbox__table-text">
-                          <a href="#">{item.title}</a>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="dashbox__table-text">{item.category}</div>
-                      </td>
-                      <td>
-                        <div className="dashbox__table-text dashbox__table-text--rate">
-                          <i className="ti ti-star"></i> {item.rating}
-                        </div>
-                      </td>
-                      <td>
-                        <div className="dashbox__table-text">
-                          <span className="badge badge-success">{item.status}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="dashbox__table-text">
-                          <a href={`/admin/edit-item/${item.id}`} className="btn btn-sm btn-primary">
-                            <i className="ti ti-edit"></i>
-                          </a>
-                          <a href="#" className="btn btn-sm btn-danger ml-2">
-                            <i className="ti ti-trash"></i>
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Dashbox>
+            data={movies}
+            columns={columns}
+            onDelete={handleDelete}
+            onEdit={handleEdit}
+            onView={handleView}
+            addLink="/admin/catalog/add"
+            isLoading={loading}
+            pagination={{
+              page: pagination.page,
+              limit: pagination.limit,
+              total: pagination.total,
+              totalPages: pagination.totalPages,
+              onPageChange: setCurrentPage
+            }}
+          />
         </div>
       </div>
     </AdminLayout>
