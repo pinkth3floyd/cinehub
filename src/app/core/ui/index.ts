@@ -1,5 +1,6 @@
 // Elements
 export { default as Input } from './elements/Input';
+export { default as Textarea } from './elements/Textarea';
 export { default as Button } from './elements/Button';
 export { default as Card } from './elements/Card';
 export { default as Badge } from './elements/Badge';
@@ -21,10 +22,14 @@ export { default as MovieGrid } from './components/MovieGrid';
 export { default as Carousel } from './components/Carousel';
 export { default as Section } from './components/Section';
 export { default as Form } from './components/Form';
+export { default as ContactForm } from './components/ContactForm';
+export { default as ContactInfo } from './components/ContactInfo';
+export { default as Accordion } from './components/Accordion';
 
 // Types - Elements
 export type { MovieItemProps } from './elements/MovieItem';
 export type { InputProps } from './elements/Input';
+export type { TextareaProps } from './elements/Textarea';
 export type { ButtonProps } from './elements/Button';
 export type { CardProps } from './elements/Card';
 export type { BadgeProps } from './elements/Badge';
@@ -37,4 +42,7 @@ export type { NavigationProps, NavigationItem } from './components/Navigation';
 export type { MovieGridProps, Movie } from './components/MovieGrid';
 export type { CarouselProps } from './components/Carousel';
 export type { SectionProps } from './components/Section';
-export type { FormProps, FormField } from './components/Form'; 
+export type { FormProps, FormField } from './components/Form';
+export type { ContactFormProps, ContactFormData } from './components/ContactForm';
+export type { ContactInfoProps, SocialLink } from './components/ContactInfo';
+export type { AccordionProps, AccordionItem } from './components/Accordion'; 

@@ -4,7 +4,7 @@ import React from 'react';
 
 export interface CarouselProps {
   children: React.ReactNode;
-  variant?: 'home' | 'content' | 'premiere';
+  variant?: 'home' | 'content' | 'premiere' | 'roadmap';
   className?: string;
   showArrows?: boolean;
   showDots?: boolean;
