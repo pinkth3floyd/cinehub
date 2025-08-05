@@ -1,53 +1,35 @@
 'use client';
 
-import Link from 'next/link';
-import Image from 'next/image';
+// import Link from 'next/link';
+// import Image from 'next/image';
 import SearchBar from './SearchBar';
 import Navigation from './Navigation';
 
 const navigationItems = [
   {
     label: 'Home',
-    items: [
-      { label: 'Home style 1', href: '/' },
-      { label: 'Home style 2', href: '/' },
-      { label: 'Home style 3', href: '/' }
-    ]
+    href: '/'
   },
   {
-    label: 'Catalog',
-    items: [
-      { label: 'Catalog style 1', href: '/catalog' },
-      { label: 'Catalog style 2', href: '/catalog' },
-      { label: 'Details Movie', href: '/details' },
-      { label: 'Details TV Series', href: '/details' }
-    ]
+    label: 'Movies',
+    href: '/allmovies'
   },
   {
-    label: 'Pricing plan',
-    href: '/pricing'
+    label: 'About',
+    href: '/about'
+  },
+
+  {
+    label: 'Contact',
+    href: '/contact'
   },
   {
-    label: 'Pages',
-    items: [
-      { label: 'About Us', href: '/about' },
-      { label: 'Profile', href: '/profile' },
-      { label: 'Actor', href: '/actor' },
-      { label: 'Contacts', href: '/contact' },
-      { label: 'Help center', href: '/faq' },
-      { label: 'Privacy policy', href: '/privacy' },
-      { label: 'Admin pages', href: '/admin', icon: 'ti ti-external-link' }
-    ]
+    label: 'FAQ',
+    href: '/faq'
   },
   {
-    label: '',
-    icon: 'ti ti-dots',
-    items: [
-      { label: 'Sign in', href: '/login' },
-      { label: 'Sign up', href: '/signup' },
-      { label: 'Forgot password', href: '/forgot' },
-      { label: '404 Page', href: '/404' }
-    ]
+    label: 'Privacy Policy',
+    href: '/privacy'
   }
 ];
 
@@ -59,10 +41,10 @@ const languageItems = [
 
 const userMenuItems = [
   { label: 'Profile', href: '/profile', icon: 'ti ti-ghost' },
-  { label: 'Subscription', href: '/profile', icon: 'ti ti-stereo-glasses' },
-  { label: 'Favorites', href: '/profile', icon: 'ti ti-bookmark' },
-  { label: 'Settings', href: '/profile', icon: 'ti ti-settings' },
-  { label: 'Logout', href: '#', icon: 'ti ti-logout' }
+  // { label: 'Subscription', href: '/profile', icon: 'ti ti-stereo-glasses' },
+  // { label: 'Favorites', href: '/profile', icon: 'ti ti-bookmark' },
+  // { label: 'Settings', href: '/profile', icon: 'ti ti-settings' },
+  // { label: 'Logout', href: '#', icon: 'ti ti-logout' }
 ];
 
 export default function Header() {
@@ -73,9 +55,10 @@ export default function Header() {
           <div className="col-12">
             <div className="header__content">
               {/* header logo */}
-              <Link href="/" className="header__logo">
+              <a style={{color: 'white', fontSize: '24px', fontWeight: 'bold'}} href="/">CineHUB</a>
+              {/* <Link href="/" className="header__logo">
                 <Image src="/core/assets/img/logo.svg" alt="CineHub" width={120} height={40} />
-              </Link>
+              </Link> */}
               {/* end header logo */}
 
               {/* header nav */}
