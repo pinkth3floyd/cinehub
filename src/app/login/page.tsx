@@ -39,12 +39,13 @@ export default function LoginPage() {
                 <div className="sign__content">
                   <div className="sign__form">
                     <Link href="/" className="sign__logo">
-                      <Image 
+                      {/* <Image 
                         src="/core/assets/img/logo.svg" 
                         alt="CineHub" 
                         width={120} 
                         height={40} 
-                      />
+                      /> */}
+                      <h1>CineHub</h1>
                     </Link>
 
                     <h3 className="sign__title">Sign in</h3>
@@ -56,13 +57,13 @@ export default function LoginPage() {
                       variant="default"
                     />
 
-                    <span className="sign__text">
+                    {/* <span className="sign__text">
                       Don&apos;t have an account? <Link href="/signup">Sign up!</Link>
-                    </span>
+                    </span> */}
 
-                    <span className="sign__text">
+                    {/* <span className="sign__text">
                       <Link href="/forgot">Forgot password?</Link>
-                    </span>
+                    </span> */}
                   </div>
                 </div>
               </div>

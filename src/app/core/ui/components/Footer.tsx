@@ -11,7 +11,8 @@ export default function Footer() {
           <div className="col-12">
             <div className="footer__content">
               <Link href="/" className="footer__logo">
-                <Image src="/core/assets/img/logo.svg" alt="CineHub" width={120} height={40} />
+                {/* <Image src="/core/assets/img/logo.svg" alt="CineHub" width={120} height={40} /> */}
+                <h1>CineHub</h1>
               </Link>
 
               <span className="footer__copyright">
