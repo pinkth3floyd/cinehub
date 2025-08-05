@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
-import "./globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,16 +13,16 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CineHub – Online Movies, TV Shows & Cinema",
-  description: "Online Movies, TV Shows & Cinema HTML Template",
-  keywords: "movies, tv shows, cinema, streaming",
+  title: "CineHub Admin – Dashboard",
+  description: "CineHub Admin Dashboard",
+  keywords: "admin, dashboard, movies, tv shows",
   icons: {
     icon: '/core/assets/icon/favicon-32x32.png',
     apple: '/core/assets/icon/favicon-32x32.png',
   },
 };
 
-export default function RootLayout({
+export default function AdminLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -33,12 +32,7 @@ export default function RootLayout({
       <head>
         {/* CSS */}
         <link rel="stylesheet" href="/core/assets/css/bootstrap.min.css" />
-        <link rel="stylesheet" href="/core/assets/css/splide.min.css" />
         <link rel="stylesheet" href="/core/assets/css/slimselect.css" />
-        <link rel="stylesheet" href="/core/assets/css/plyr.css" />
-        <link rel="stylesheet" href="/core/assets/css/photoswipe.css" />
-        <link rel="stylesheet" href="/core/assets/css/default-skin.css" />
-        <link rel="stylesheet" href="/core/assets/css/main.css" />
         <link rel="stylesheet" href="/core/assets/css/admin.css" />
 
         {/* Icon font */}
@@ -49,14 +43,10 @@ export default function RootLayout({
         
         {/* JS */}
         <Script src="/core/assets/js/bootstrap.bundle.min.js" strategy="afterInteractive" />
-        <Script src="/core/assets/js/splide.min.js" strategy="afterInteractive" />
         <Script src="/core/assets/js/slimselect.min.js" strategy="afterInteractive" />
         <Script src="/core/assets/js/smooth-scrollbar.js" strategy="afterInteractive" />
-        <Script src="/core/assets/js/plyr.min.js" strategy="afterInteractive" />
-        <Script src="/core/assets/js/photoswipe.min.js" strategy="afterInteractive" />
-        <Script src="/core/assets/js/photoswipe-ui-default.min.js" strategy="afterInteractive" />
-        <Script src="/core/assets/js/main.js" strategy="afterInteractive" />
+        <Script src="/core/assets/js/admin.js" strategy="afterInteractive" />
       </body>
     </html>
   );
-}
+} 

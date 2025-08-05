@@ -1,9 +1,13 @@
-import React from 'react'
+import React from 'react';
+import AdminLayout from '../core/ui/components/AdminLayout';
+import AdminDashboard from '../core/ui/components/AdminDashboard';
 
-const page = () => {
+const AdminPage = () => {
   return (
-    <div>page</div>
-  )
-}
+    <AdminLayout>
+      <AdminDashboard />
+    </AdminLayout>
+  );
+};
 
-export default page ;
+export default AdminPage;
