@@ -5,7 +5,7 @@ import AdminLayout from '../../../core/ui/components/AdminLayout';
 import CrudForm from '../../../core/ui/components/CrudForm';
 import { createMovie } from '../../../core/entities/movies/actions';
 import { getAllTypes } from '../../../core/entities/type/actions';
-import { getYears } from '../../../core/entities/year/actions';
+import { getAllYears } from '../../../core/entities/year/actions';
 
 // Static fields that don't depend on external data
 const staticFields = [
@@ -114,7 +114,7 @@ const AddMoviePage = () => {
       try {
         const [typesResult, yearsResult] = await Promise.all([
           getAllTypes(),
-          getYears()
+          getAllYears()
         ]);
 
         if (typesResult.success && typesResult.data) {

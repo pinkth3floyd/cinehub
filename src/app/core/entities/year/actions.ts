@@ -2,8 +2,8 @@
 
 import { db } from '../index';
 import { years } from './schema';
-import { eq, desc } from 'drizzle-orm';
-import { createYearSchema, updateYearSchema, type CreateYearInput, type UpdateYearInput } from './schema';
+import { eq, desc, like, sql } from 'drizzle-orm';
+import { createYearSchema, updateYearSchema, yearFilterSchema, type CreateYearInput, type UpdateYearInput, type YearFilterInput } from './schema';
 
 // Create a new year
 export async function createYear(data: CreateYearInput) {
@@ -20,14 +20,52 @@ export async function createYear(data: CreateYearInput) {
   }
 }
 
-// Get all years
-export async function getYears() {
+// Get all years with filtering and pagination
+export async function getYears(filters: YearFilterInput = { page: 1, limit: 10 }) {
   try {
-    const yearsList = await db.select().from(years).orderBy(desc(years.year));
+    const validatedFilters = yearFilterSchema.parse(filters);
+    const { page = 1, limit = 10, search } = validatedFilters;
+    const offset = (page - 1) * limit;
     
-    return { success: true, data: yearsList };
+    let whereClause = undefined;
+    if (search) {
+      whereClause = like(years.year, `%${search}%`);
+    }
+    
+    const yearsList = await db.select().from(years)
+      .where(whereClause)
+      .orderBy(desc(years.year))
+      .limit(limit)
+      .offset(offset);
+    
+    const totalCountResult = await db.select({ count: sql`count(*)` }).from(years).where(whereClause);
+    const totalCount = totalCountResult[0] ? Number(totalCountResult[0].count) : 0;
+    
+    return {
+      success: true,
+      data: {
+        years: yearsList,
+        pagination: {
+          page,
+          limit,
+          total: totalCount,
+          totalPages: Math.ceil(totalCount / limit)
+        }
+      }
+    };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Failed to get years' };
+  }
+}
+
+// Get all years (for dropdowns)
+export async function getAllYears() {
+  try {
+    const allYears = await db.select().from(years).orderBy(desc(years.year));
+    
+    return { success: true, data: allYears };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to get all years' };
   }
 }
 

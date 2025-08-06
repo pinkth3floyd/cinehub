@@ -18,8 +18,15 @@ export const updateYearSchema = z.object({
   year: z.number().min(1900, 'Year must be at least 1900').max(new Date().getFullYear() + 10, 'Year cannot be more than 10 years in the future'),
 });
 
+export const yearFilterSchema = z.object({
+  search: z.string().optional(),
+  page: z.number().min(1).default(1),
+  limit: z.number().min(1).max(100).default(10),
+});
+
 // TypeScript types
 export type Year = typeof years.$inferSelect;
 export type NewYear = typeof years.$inferInsert;
 export type CreateYearInput = z.infer<typeof createYearSchema>;
 export type UpdateYearInput = z.infer<typeof updateYearSchema>;
+export type YearFilterInput = z.infer<typeof yearFilterSchema>;

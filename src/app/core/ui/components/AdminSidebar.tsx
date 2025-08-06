@@ -56,7 +56,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen = true }) => {
           <li className="sidebar__nav-item">
             <Link 
               href="/admin" 
-              className={`sidebar__nav-link ${isActive('/admin') && !pathname.includes('/catalog') && !pathname.includes('/users') && !pathname.includes('/reviews') && !pathname.includes('/genres') && !pathname.includes('/types') && !pathname.includes('/tags') && !pathname.includes('/settings') ? 'sidebar__nav-link--active' : ''}`}
+              className={`sidebar__nav-link ${isActive('/admin') && !pathname.includes('/catalog') && !pathname.includes('/users') && !pathname.includes('/reviews') && !pathname.includes('/genres') && !pathname.includes('/types') && !pathname.includes('/tags') && !pathname.includes('/years') && !pathname.includes('/settings') ? 'sidebar__nav-link--active' : ''}`}
             >
               <i className="ti ti-layout-grid"></i> <span>Dashboard</span>
             </Link>
@@ -113,6 +113,15 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen = true }) => {
               className={`sidebar__nav-link ${isActive('/admin/tags') ? 'sidebar__nav-link--active' : ''}`}
             >
               <i className="ti ti-tag"></i> <span>Tags</span>
+            </Link>
+          </li>
+
+          <li className="sidebar__nav-item">
+            <Link 
+              href="/admin/years" 
+              className={`sidebar__nav-link ${isActive('/admin/years') ? 'sidebar__nav-link--active' : ''}`}
+            >
+              <i className="ti ti-calendar"></i> <span>Years</span>
             </Link>
           </li>
 
