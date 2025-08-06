@@ -16,11 +16,21 @@ export async function createMovie(data: CreateMovieInput) {
     // Extract tagIds for separate handling
     const { tagIds, ...movieData } = validatedData;
     
+    // Clean up movieData for database insertion
+    const cleanMovieData: any = { ...movieData };
+    
+    // Handle releaseDate - only include if it's a valid Date
+    if (cleanMovieData.releaseDate && cleanMovieData.releaseDate instanceof Date) {
+      cleanMovieData.releaseDate = cleanMovieData.releaseDate;
+    } else {
+      delete cleanMovieData.releaseDate;
+    }
+    
+    // Remove updatedAt as it has a default in schema
+    delete cleanMovieData.updatedAt;
+    
     // Create movie
-    const [movie] = await db.insert(movies).values({
-      ...movieData,
-      updatedAt: new Date(),
-    }).returning();
+    const [movie] = await db.insert(movies).values(cleanMovieData).returning();
     
     // Create movie-tag relationships if tagIds provided
     if (tagIds && tagIds.length > 0) {
@@ -157,8 +167,21 @@ export async function updateMovie(id: string, data: UpdateMovieInput) {
     // Extract tagIds for separate handling
     const { tagIds, ...movieData } = validatedData;
     
+    // Clean up movieData for database update
+    const cleanMovieData: any = { ...movieData };
+    
+    // Handle releaseDate - only include if it's a valid Date
+    if (cleanMovieData.releaseDate && cleanMovieData.releaseDate instanceof Date) {
+      cleanMovieData.releaseDate = cleanMovieData.releaseDate;
+    } else {
+      delete cleanMovieData.releaseDate;
+    }
+    
+    // Add updatedAt
+    cleanMovieData.updatedAt = new Date();
+    
     const [movie] = await db.update(movies)
-      .set({ ...movieData, updatedAt: new Date() })
+      .set(cleanMovieData)
       .where(eq(movies.id, id))
       .returning();
     

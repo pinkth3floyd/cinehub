@@ -41,7 +41,7 @@ export const createMovieSchema = z.object({
     if (typeof val === 'string' && val !== '') {
       return new Date(val);
     }
-    return val;
+    return undefined;
   }).optional(),
   status: z.enum(['draft', 'published', 'archived']).default('draft'),
   featured: z.boolean().default(false),
@@ -67,7 +67,7 @@ export const updateMovieSchema = z.object({
     if (typeof val === 'string' && val !== '') {
       return new Date(val);
     }
-    return val;
+    return undefined;
   }).optional(),
   status: z.enum(['draft', 'published', 'archived']).optional(),
   featured: z.boolean().optional(),
