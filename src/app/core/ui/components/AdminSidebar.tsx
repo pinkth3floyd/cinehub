@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 interface AdminSidebarProps {
   isOpen?: boolean;
@@ -10,10 +11,18 @@ interface AdminSidebarProps {
 
 const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen = true }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const pathname = usePathname();
 
   const handleDropdownToggle = (e: React.MouseEvent) => {
     e.preventDefault();
     setDropdownOpen(!dropdownOpen);
+  };
+
+  const isActive = (path: string) => {
+    if (path === '/admin') {
+      return pathname === '/admin';
+    }
+    return pathname.startsWith(path);
   };
 
   return (
@@ -45,55 +54,79 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen = true }) => {
       <div className="sidebar__nav-wrap">
         <ul className="sidebar__nav">
           <li className="sidebar__nav-item">
-            <Link href="/admin" className="sidebar__nav-link sidebar__nav-link--active">
+            <Link 
+              href="/admin" 
+              className={`sidebar__nav-link ${isActive('/admin') && !pathname.includes('/catalog') && !pathname.includes('/users') && !pathname.includes('/reviews') && !pathname.includes('/genres') && !pathname.includes('/types') && !pathname.includes('/tags') && !pathname.includes('/settings') ? 'sidebar__nav-link--active' : ''}`}
+            >
               <i className="ti ti-layout-grid"></i> <span>Dashboard</span>
             </Link>
           </li>
 
           <li className="sidebar__nav-item">
-            <Link href="/admin/catalog" className="sidebar__nav-link">
+            <Link 
+              href="/admin/catalog" 
+              className={`sidebar__nav-link ${isActive('/admin/catalog') ? 'sidebar__nav-link--active' : ''}`}
+            >
               <i className="ti ti-movie"></i> <span>Movies</span>
             </Link>
           </li>
 
           <li className="sidebar__nav-item">
-            <Link href="/admin/users" className="sidebar__nav-link">
+            <Link 
+              href="/admin/users" 
+              className={`sidebar__nav-link ${isActive('/admin/users') ? 'sidebar__nav-link--active' : ''}`}
+            >
               <i className="ti ti-users"></i> <span>Users</span>
             </Link>
           </li>
 
           <li className="sidebar__nav-item">
-            <Link href="/admin/reviews" className="sidebar__nav-link">
+            <Link 
+              href="/admin/reviews" 
+              className={`sidebar__nav-link ${isActive('/admin/reviews') ? 'sidebar__nav-link--active' : ''}`}
+            >
               <i className="ti ti-message"></i> <span>Reviews</span>
             </Link>
           </li>
 
           <li className="sidebar__nav-item">
-            <Link href="/admin/genres" className="sidebar__nav-link">
+            <Link 
+              href="/admin/genres" 
+              className={`sidebar__nav-link ${isActive('/admin/genres') ? 'sidebar__nav-link--active' : ''}`}
+            >
               <i className="ti ti-category"></i> <span>Genres</span>
             </Link>
           </li>
 
           <li className="sidebar__nav-item">
-            <Link href="/admin/types" className="sidebar__nav-link">
+            <Link 
+              href="/admin/types" 
+              className={`sidebar__nav-link ${isActive('/admin/types') ? 'sidebar__nav-link--active' : ''}`}
+            >
               <i className="ti ti-layout"></i> <span>Types</span>
             </Link>
           </li>
 
           <li className="sidebar__nav-item">
-            <Link href="/admin/tags" className="sidebar__nav-link">
+            <Link 
+              href="/admin/tags" 
+              className={`sidebar__nav-link ${isActive('/admin/tags') ? 'sidebar__nav-link--active' : ''}`}
+            >
               <i className="ti ti-tag"></i> <span>Tags</span>
             </Link>
           </li>
 
           <li className="sidebar__nav-item">
-            <Link href="/admin/settings" className="sidebar__nav-link">
+            <Link 
+              href="/admin/settings" 
+              className={`sidebar__nav-link ${isActive('/admin/settings') ? 'sidebar__nav-link--active' : ''}`}
+            >
               <i className="ti ti-settings"></i> <span>Settings</span>
             </Link>
           </li>
 
           {/* dropdown */}
-          <li className="sidebar__nav-item">
+          {/* <li className="sidebar__nav-item">
             <a 
               className="sidebar__nav-link" 
               href="#" 
@@ -112,7 +145,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen = true }) => {
               <li><Link href="/admin/forgot">Forgot password</Link></li>
               <li><Link href="/admin/404">404 Page</Link></li>
             </ul>
-          </li>
+          </li> */}
           {/* end dropdown */}
 
           <li className="sidebar__nav-item">

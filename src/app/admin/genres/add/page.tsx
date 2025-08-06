@@ -5,31 +5,31 @@ import AdminLayout from '../../../core/ui/components/AdminLayout';
 import CrudForm from '../../../core/ui/components/CrudForm';
 import { createGenre } from '../../../core/entities/genre/actions';
 
-const AddGenrePage = () => {
-  const fields = [
-    {
-      name: 'name',
-      label: 'Name',
-      type: 'text' as const,
-      required: true,
-      placeholder: 'Enter genre name (e.g., Action)'
-    },
-    {
-      name: 'slug',
-      label: 'Slug',
-      type: 'text' as const,
-      required: true,
-      placeholder: 'Enter URL slug (e.g., action)'
-    },
-    {
-      name: 'description',
-      label: 'Description',
-      type: 'textarea' as const,
-      required: false,
-      placeholder: 'Enter genre description'
-    }
-  ];
+const fields = [
+  {
+    name: 'name',
+    label: 'Name',
+    type: 'text' as const,
+    required: true,
+    placeholder: 'Enter genre name (e.g., Action)'
+  },
+  {
+    name: 'slug',
+    label: 'Slug',
+    type: 'text' as const,
+    required: true,
+    placeholder: 'Enter URL slug (e.g., action)'
+  },
+  {
+    name: 'description',
+    label: 'Description',
+    type: 'textarea' as const,
+    required: false,
+    placeholder: 'Enter genre description'
+  }
+];
 
+const AddGenrePage = () => {
   const handleSubmit = async (data: any) => {
     try {
       const result = await createGenre(data);
@@ -45,6 +45,7 @@ const AddGenrePage = () => {
         title="Add New Genre"
         fields={fields}
         onSubmit={handleSubmit}
+        successRedirect="/admin/genres"
       />
     </AdminLayout>
   );

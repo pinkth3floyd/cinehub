@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface FormField {
@@ -20,6 +20,7 @@ interface CrudFormProps {
   onSubmit: (data: Record<string, unknown>) => Promise<{ success: boolean; error?: string }>;
   onCancel?: () => void;
   isLoading?: boolean;
+  successRedirect?: string;
 }
 
 const CrudForm: React.FC<CrudFormProps> = ({
@@ -28,16 +29,20 @@ const CrudForm: React.FC<CrudFormProps> = ({
   initialData = {},
   onSubmit,
   onCancel,
-  isLoading = false
+  isLoading = false,
+  successRedirect
 }) => {
   const router = useRouter();
   const [formData, setFormData] = useState<Record<string, unknown>>(initialData);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Memoize the initial data to prevent unnecessary re-renders
+  const memoizedInitialData = useMemo(() => initialData, [JSON.stringify(initialData)]);
+
   useEffect(() => {
-    setFormData(initialData);
-  }, [initialData]);
+    setFormData(memoizedInitialData);
+  }, [memoizedInitialData]);
 
   const handleInputChange = (name: string, value: unknown) => {
     setFormData((prev: Record<string, unknown>) => ({
@@ -93,7 +98,11 @@ const CrudForm: React.FC<CrudFormProps> = ({
       const result = await onSubmit(formData);
       
       if (result.success) {
-        router.back();
+        if (successRedirect) {
+          router.push(successRedirect);
+        } else {
+          router.back();
+        }
       } else {
         setErrors({ submit: result.error || 'An error occurred' });
       }
@@ -112,7 +121,7 @@ const CrudForm: React.FC<CrudFormProps> = ({
       case 'textarea':
         return (
           <textarea
-            className={`form-control ${error ? 'is-invalid' : ''}`}
+            className={`sign__input ${error ? 'is-invalid' : ''}`}
             name={field.name}
             value={String(value)}
             onChange={(e) => handleInputChange(field.name, e.target.value)}
@@ -125,7 +134,7 @@ const CrudForm: React.FC<CrudFormProps> = ({
       case 'select':
         return (
           <select
-            className={`form-control ${error ? 'is-invalid' : ''}`}
+            className={`sign__select ${error ? 'is-invalid' : ''}`}
             name={field.name}
             value={String(value)}
             onChange={(e) => handleInputChange(field.name, e.target.value)}
@@ -142,16 +151,16 @@ const CrudForm: React.FC<CrudFormProps> = ({
 
       case 'checkbox':
         return (
-          <div className="form-check">
+          <div className="sign__group sign__group--checkbox">
             <input
-              className="form-check-input"
+              className="sign__input"
               type="checkbox"
               name={field.name}
               checked={Boolean(value)}
               onChange={(e) => handleInputChange(field.name, e.target.checked)}
               id={field.name}
             />
-            <label className="form-check-label" htmlFor={field.name}>
+            <label className="sign__label" htmlFor={field.name}>
               {field.label}
             </label>
           </div>
@@ -161,7 +170,7 @@ const CrudForm: React.FC<CrudFormProps> = ({
         return (
           <input
             type="date"
-            className={`form-control ${error ? 'is-invalid' : ''}`}
+            className={`sign__input ${error ? 'is-invalid' : ''}`}
             name={field.name}
             value={String(value)}
             onChange={(e) => handleInputChange(field.name, e.target.value)}
@@ -173,7 +182,7 @@ const CrudForm: React.FC<CrudFormProps> = ({
         return (
           <input
             type={field.type}
-            className={`form-control ${error ? 'is-invalid' : ''}`}
+            className={`sign__input ${error ? 'is-invalid' : ''}`}
             name={field.name}
             value={String(value)}
             onChange={(e) => handleInputChange(field.name, e.target.value)}
@@ -196,9 +205,9 @@ const CrudForm: React.FC<CrudFormProps> = ({
 
       <div className="row">
         <div className="col-12">
-          <div className="card">
-            <div className="card-body">
-              <form onSubmit={handleSubmit}>
+          <div className="dashbox">
+            <div className="dashbox__wrap">
+              <form onSubmit={handleSubmit} className="sign__form sign__form--full">
                 {errors.submit && (
                   <div className="alert alert-danger" role="alert">
                     {errors.submit}
@@ -207,8 +216,8 @@ const CrudForm: React.FC<CrudFormProps> = ({
 
                 <div className="row">
                   {fields.map((field) => (
-                    <div key={field.name} className="col-md-6 mb-3">
-                      <label htmlFor={field.name} className="form-label">
+                    <div key={field.name} className="col-12 mb-3">
+                      <label htmlFor={field.name} className="sign__label">
                         {field.label}
                         {field.required && <span className="text-danger">*</span>}
                       </label>
@@ -222,12 +231,12 @@ const CrudForm: React.FC<CrudFormProps> = ({
                   ))}
                 </div>
 
-                <div className="row mt-3">
+                <div className="row mt-4">
                   <div className="col-12">
-                    <div className="d-flex gap-2">
+                    <div className="d-flex gap-3">
                       <button
                         type="submit"
-                        className="btn btn-primary"
+                        className="sign__btn sign__btn--primary"
                         disabled={isSubmitting || isLoading}
                       >
                         {isSubmitting ? (
@@ -241,7 +250,7 @@ const CrudForm: React.FC<CrudFormProps> = ({
                       </button>
                       <button
                         type="button"
-                        className="btn btn-secondary"
+                        className="sign__btn sign__btn--secondary"
                         onClick={onCancel || (() => router.back())}
                         disabled={isSubmitting || isLoading}
                       >

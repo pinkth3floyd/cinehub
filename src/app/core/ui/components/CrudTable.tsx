@@ -143,52 +143,54 @@ const CrudTable: React.FC<CrudTableProps> = ({
                     ))}
                     <td>
                       <div className="dashbox__table-text">
-                        {onView && (
-                          <button
-                            className="btn btn-sm btn-info me-1"
-                            onClick={() => onView(String(item.id))}
-                            title="View"
-                          >
-                            <i className="ti ti-eye"></i>
-                          </button>
-                        )}
-                        {onEdit && (
-                          <button
-                            className="btn btn-sm btn-primary me-1"
-                            onClick={() => onEdit(String(item.id))}
-                            title="Edit"
-                          >
-                            <i className="ti ti-edit"></i>
-                          </button>
-                        )}
-                        {onDelete && (
-                          deleteConfirm === item.id ? (
-                            <div className="d-inline-block">
-                              <button
-                                className="btn btn-sm btn-danger me-1"
-                                onClick={() => handleDelete(String(item.id))}
-                                title="Confirm Delete"
-                              >
-                                <i className="ti ti-check"></i>
-                              </button>
-                              <button
-                                className="btn btn-sm btn-secondary"
-                                onClick={cancelDelete}
-                                title="Cancel"
-                              >
-                                <i className="ti ti-x"></i>
-                              </button>
-                            </div>
-                          ) : (
+                        <div className="action-buttons">
+                          {onView && (
                             <button
-                              className="btn btn-sm btn-danger"
-                              onClick={() => handleDelete(String(item.id))}
-                              title="Delete"
+                              className="action-btn action-btn--view"
+                              onClick={() => onView(String(item.id))}
+                              title="View"
                             >
-                              <i className="ti ti-trash"></i>
+                              <i className="ti ti-eye"></i>
                             </button>
-                          )
-                        )}
+                          )}
+                          {onEdit && (
+                            <button
+                              className="action-btn action-btn--edit"
+                              onClick={() => onEdit(String(item.id))}
+                              title="Edit"
+                            >
+                              <i className="ti ti-edit"></i>
+                            </button>
+                          )}
+                          {onDelete && (
+                            deleteConfirm === item.id ? (
+                              <div className="action-buttons">
+                                <button
+                                  className="action-btn action-btn--confirm"
+                                  onClick={() => handleDelete(String(item.id))}
+                                  title="Confirm Delete"
+                                >
+                                  <i className="ti ti-check"></i>
+                                </button>
+                                <button
+                                  className="action-btn action-btn--cancel"
+                                  onClick={cancelDelete}
+                                  title="Cancel"
+                                >
+                                  <i className="ti ti-x"></i>
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                className="action-btn action-btn--delete"
+                                onClick={() => handleDelete(String(item.id))}
+                                title="Delete"
+                              >
+                                <i className="ti ti-trash"></i>
+                              </button>
+                            )
+                          )}
+                        </div>
                       </div>
                     </td>
                   </tr>
