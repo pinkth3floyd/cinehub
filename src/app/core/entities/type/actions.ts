@@ -72,6 +72,22 @@ export async function getAllTypes() {
   }
 }
 
+// Get types statistics
+export async function getTypeStats() {
+  try {
+    const totalTypes = await db.select({ count: sql`count(*)` }).from(types);
+    
+    return {
+      success: true,
+      data: {
+        total: totalTypes[0]?.count || 0
+      }
+    };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to get type stats' };
+  }
+}
+
 // Get type by ID
 export async function getTypeById(id: string) {
   try {

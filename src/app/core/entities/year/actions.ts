@@ -58,6 +58,22 @@ export async function getYears(filters: YearFilterInput = { page: 1, limit: 10 }
   }
 }
 
+// Get years statistics
+export async function getYearStats() {
+  try {
+    const totalYears = await db.select({ count: sql`count(*)` }).from(years);
+    
+    return {
+      success: true,
+      data: {
+        total: totalYears[0]?.count || 0
+      }
+    };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to get year stats' };
+  }
+}
+
 // Get all years (for dropdowns)
 export async function getAllYears() {
   try {

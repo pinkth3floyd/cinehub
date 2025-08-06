@@ -2,42 +2,81 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { useQuery } from '@tanstack/react-query';
 import StatsCard from './StatsCard';
 import Dashbox from './Dashbox';
+import { getDashboardStats } from '../../entities/dashboard/actions';
 
 const AdminDashboard: React.FC = () => {
+  const { data: stats, isLoading, error } = useQuery({
+    queryKey: ['dashboard-stats'],
+    queryFn: getDashboardStats,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
-  const topItems = [
-    { id: 241, title: 'The Lost City', category: 'Movie', rating: 9.2 },
-    { id: 825, title: 'Undercurrents', category: 'Movie', rating: 9.1 },
-    { id: 9271, title: 'Tales from the Underworld', category: 'TV Series', rating: 9.0 },
-    { id: 635, title: 'The Unseen World', category: 'TV Series', rating: 8.9 },
-    { id: 826, title: 'Redemption Road', category: 'TV Series', rating: 8.9 },
-  ];
+  if (isLoading) {
+    return (
+      <>
+        <div className="row">
+          <div className="col-12">
+            <div className="main__title">
+              <h2>Dashboard</h2>
+            </div>
+          </div>
+        </div>
+        <div className="row">
+          <div className="col-12">
+            <div className="dashbox">
+              <div className="dashbox__content">
+                <div className="text-center py-5">
+                  <div className="spinner-border text-secondary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                  <p className="mt-3">Loading dashboard statistics...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
-  const latestItems = [
-    { id: 824, title: 'I Dream in Another Language', category: 'TV Series', rating: 7.2 },
-    { id: 602, title: 'Benched', category: 'Movie', rating: 6.3 },
-    { id: 538, title: 'Whitney', category: 'TV Show', rating: 8.4 },
-    { id: 129, title: 'Blindspotting', category: 'Anime', rating: 9.0 },
-    { id: 360, title: 'Another', category: 'Movie', rating: 7.7 },
-  ];
+  if (error) {
+    return (
+      <>
+        <div className="row">
+          <div className="col-12">
+            <div className="main__title">
+              <h2>Dashboard</h2>
+            </div>
+          </div>
+        </div>
+        <div className="row">
+          <div className="col-12">
+            <div className="dashbox">
+              <div className="dashbox__content">
+                <div className="alert alert-danger">
+                  <i className="ti ti-alert-triangle me-2"></i>
+                  Failed to load dashboard statistics. Please try again.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
-  const latestUsers = [
-    { id: 23, name: 'Brian Cranston', email: 'bcxwz@email.com', username: 'BrianXWZ' },
-    { id: 22, name: 'Jesse Plemons', email: 'jess@email.com', username: 'Jesse.P' },
-    { id: 21, name: 'Matt Jones', email: 'matt@email.com', username: 'Matty' },
-    { id: 20, name: 'Tess Harper', email: 'harper@email.com', username: 'Harper123' },
-    { id: 19, name: 'Jonathan Banks', email: 'bank@email.com', username: 'Jonathan' },
-  ];
-
-  const latestReviews = [
-    { id: 1001, item: 'I Dream in Another Language', author: 'Eliza Josceline', rating: 7.2 },
-    { id: 1002, item: 'Benched', author: 'Ketut', rating: 6.3 },
-    { id: 1003, item: 'Whitney', author: 'Brian Cranston', rating: 8.4 },
-    { id: 1004, item: 'Blindspotting', author: 'Quang', rating: 9.0 },
-    { id: 1005, item: 'Another', author: 'Jackson Brown', rating: 7.7 },
-  ];
+  const dashboardData = stats?.data || {
+    movies: { total: 0, published: 0, draft: 0, featured: 0 },
+    users: { total: 0, active: 0, banned: 0 },
+    reviews: { total: 0, pending: 0, approved: 0, rejected: 0 },
+    genres: { total: 0 },
+    types: { total: 0 },
+    tags: { total: 0 },
+    years: { total: 0 }
+  };
 
   return (
     <>
@@ -46,8 +85,8 @@ const AdminDashboard: React.FC = () => {
         <div className="col-12">
           <div className="main__title">
             <h2>Dashboard</h2>
-            <Link href="/admin/add-item" className="main__title-link">
-              add item
+            <Link href="/admin/catalog/add" className="main__title-link">
+              add movie
             </Link>
           </div>
         </div>
@@ -58,48 +97,82 @@ const AdminDashboard: React.FC = () => {
       <div className="row">
         <div className="col-12 col-sm-6 col-xl-3">
           <StatsCard
-            title="Subscriptions this month"
-            value="1 678"
-            change="+15"
+            title="Total Movies"
+            value={dashboardData.movies.total.toString()}
+            change={`${dashboardData.movies.published} published`}
             changeType="positive"
-            icon="ti ti-diamond"
-          />
-        </div>
-
-        <div className="col-12 col-sm-6 col-xl-3">
-          <StatsCard
-            title="Items added this month"
-            value="376"
-            change="-44"
-            changeType="negative"
             icon="ti ti-movie"
           />
         </div>
 
         <div className="col-12 col-sm-6 col-xl-3">
           <StatsCard
-            title="Views this month"
-            value="509 573"
-            change="+3.1%"
+            title="Total Users"
+            value={dashboardData.users.total.toString()}
+            change={`${dashboardData.users.active} active`}
             changeType="positive"
-            icon="ti ti-eye"
+            icon="ti ti-users"
           />
         </div>
 
         <div className="col-12 col-sm-6 col-xl-3">
           <StatsCard
-            title="Reviews this month"
-            value="642"
-            change="+8"
+            title="Total Reviews"
+            value={dashboardData.reviews.total.toString()}
+            change={`${dashboardData.reviews.approved} approved`}
             changeType="positive"
             icon="ti ti-star-half-filled"
+          />
+        </div>
+
+        <div className="col-12 col-sm-6 col-xl-3">
+          <StatsCard
+            title="Total Genres"
+            value={dashboardData.genres.total.toString()}
+            icon="ti ti-category"
+          />
+        </div>
+      </div>
+
+      <div className="row">
+        <div className="col-12 col-sm-6 col-xl-3">
+          <StatsCard
+            title="Total Types"
+            value={dashboardData.types.total.toString()}
+            icon="ti ti-tag"
+          />
+        </div>
+
+        <div className="col-12 col-sm-6 col-xl-3">
+          <StatsCard
+            title="Total Tags"
+            value={dashboardData.tags.total.toString()}
+            icon="ti ti-tags"
+          />
+        </div>
+
+        <div className="col-12 col-sm-6 col-xl-3">
+          <StatsCard
+            title="Total Years"
+            value={dashboardData.years.total.toString()}
+            icon="ti ti-calendar"
+          />
+        </div>
+
+        <div className="col-12 col-sm-6 col-xl-3">
+          <StatsCard
+            title="Featured Movies"
+            value={dashboardData.movies.featured.toString()}
+            change={`${dashboardData.movies.draft} drafts`}
+            changeType="positive"
+            icon="ti ti-star"
           />
         </div>
       </div>
 
       <div className="row">
         {/* Top Items Dashbox */}
-        <div className="col-12 col-xl-6">
+        {/* <div className="col-12 col-xl-6">
           <Dashbox
             title="Top items"
             icon="ti ti-trophy"
@@ -140,9 +213,9 @@ const AdminDashboard: React.FC = () => {
               </table>
             </div>
           </Dashbox>
-        </div>
+        </div> */}
 
-        {/* Latest Items Dashbox */}
+        {/* Latest Items Dashbox
         <div className="col-12 col-xl-6">
           <Dashbox
             title="Latest items"
@@ -184,10 +257,10 @@ const AdminDashboard: React.FC = () => {
               </table>
             </div>
           </Dashbox>
-        </div>
+        </div> */}
 
         {/* Latest Users Dashbox */}
-        <div className="col-12 col-xl-6">
+        {/* <div className="col-12 col-xl-6">
           <Dashbox
             title="Latest users"
             icon="ti ti-users"
@@ -226,10 +299,10 @@ const AdminDashboard: React.FC = () => {
               </table>
             </div>
           </Dashbox>
-        </div>
+        </div> */}
 
         {/* Latest Reviews Dashbox */}
-        <div className="col-12 col-xl-6">
+        {/* <div className="col-12 col-xl-6">
           <Dashbox
             title="Latest reviews"
             icon="ti ti-star-half-filled"
@@ -270,7 +343,7 @@ const AdminDashboard: React.FC = () => {
               </table>
             </div>
           </Dashbox>
-        </div>
+        </div> */}
       </div>
     </>
   );

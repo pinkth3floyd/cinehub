@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
+import TanstackProvider from "../core/ui/components/TanstackProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,7 +40,9 @@ export default function AdminLayout({
         <link rel="stylesheet" href="/core/assets/webfont/tabler-icons.min.css" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        {children}
+        <TanstackProvider>
+          {children}
+        </TanstackProvider>
         
         {/* JS - Admin only, no main site JS */}
         <Script src="/core/assets/js/bootstrap.bundle.min.js" strategy="afterInteractive" />

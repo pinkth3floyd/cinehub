@@ -64,6 +64,22 @@ export async function getGenres(filters: GenreFilterInput = { page: 1, limit: 10
   }
 }
 
+// Get genres statistics
+export async function getGenreStats() {
+  try {
+    const totalGenres = await db.select({ count: sql`count(*)` }).from(genres);
+    
+    return {
+      success: true,
+      data: {
+        total: totalGenres[0]?.count || 0
+      }
+    };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to get genre stats' };
+  }
+}
+
 // Get genre by ID
 export async function getGenreById(id: string) {
   try {

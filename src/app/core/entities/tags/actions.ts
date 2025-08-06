@@ -61,6 +61,22 @@ export async function getTags(filters: TagFilterInput = { page: 1, limit: 10 }) 
   }
 }
 
+// Get tags statistics
+export async function getTagStats() {
+  try {
+    const totalTags = await db.select({ count: sql`count(*)` }).from(tags);
+    
+    return {
+      success: true,
+      data: {
+        total: totalTags[0]?.count || 0
+      }
+    };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to get tag stats' };
+  }
+}
+
 // Get tag by ID
 export async function getTagById(id: string) {
   try {
