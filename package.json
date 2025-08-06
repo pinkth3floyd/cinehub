@@ -16,7 +16,8 @@
     "db:init": "tsx src/app/core/entities/init-db.ts",
     "db:test": "tsx src/app/core/entities/test-connection.ts",
     "db:setup": "npm run db:generate && npm run db:push && npm run db:init",
-    "db:manager": "tsx scripts/db-manager.ts"
+    "db:manager": "tsx scripts/db-manager.ts",
+    "movie:import": "tsx scripts/movie-importer.ts"
   },
   "dependencies": {
     "@libsql/client": "^0.15.10",

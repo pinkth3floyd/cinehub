@@ -1,4 +1,4 @@
-#!/usr/bin/env tsx
+#!/usr/bin/env node
 
 import { execSync } from 'child_process';
 
@@ -85,30 +85,47 @@ const commands = {
     }
   },
   
+  'import-movies': () => {
+    console.log('🎬 Importing movies from IMDb...');
+    const searchTerm = process.argv[3] || 'popular movies 2024';
+    const limit = process.argv[4] || '10';
+    execSync(`npm run movie:import import "${searchTerm}" ${limit}`, { stdio: 'inherit' });
+  },
+  
   'help': () => {
     console.log(`
 📚 Database Management Commands
 
 Available commands:
-  generate    Generate migration files from schema changes
-  migrate     Apply migrations to the database
-  push        Push schema changes directly to database (dev only)
-  studio      Open Drizzle Studio to view/edit data
-  drop        Drop all tables (⚠️ DESTRUCTIVE)
-  check       Check for schema drift
-  init        Initialize database with default data
-  test        Test database connection
-  setup       Complete setup: generate + push + initialize
-  reset       Reset database: drop + setup
-  help        Show this help message
+  generate        Generate migration files from schema changes
+  migrate         Apply migrations to the database
+  push            Push schema changes directly to database (dev only)
+  studio          Open Drizzle Studio to view/edit data
+  drop            Drop all tables (⚠️ DESTRUCTIVE)
+  check           Check for schema drift
+  init            Initialize database with default data
+  test            Test database connection
+  setup           Complete setup: generate + push + initialize
+  reset           Reset database: drop + setup
+  import-movies   Import movies from IMDb API
+  help            Show this help message
 
 Usage:
-  tsx scripts/db-manager.ts <command>
+  tsx scripts/db-manager.ts <command> [options]
 
 Examples:
   tsx scripts/db-manager.ts setup
   tsx scripts/db-manager.ts test
   tsx scripts/db-manager.ts studio
+  tsx scripts/db-manager.ts import-movies "action movies 2024" 5
+
+Movie Import:
+  tsx scripts/db-manager.ts import-movies [search-term] [limit]
+  
+  Examples:
+    tsx scripts/db-manager.ts import-movies "comedy movies" 10
+    tsx scripts/db-manager.ts import-movies "drama 2023" 5
+    tsx scripts/db-manager.ts import-movies "sci-fi movies" 3
     `);
   }
 };
