@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import AdminLayout from '../../../core/ui/components/AdminLayout';
 import CrudForm from '../../../core/ui/components/CrudForm';
 import { createMovie } from '../../../core/entities/movies/actions';
-import { getTypes } from '../../../core/entities/type/actions';
+import { getAllTypes } from '../../../core/entities/type/actions';
 import { getYears } from '../../../core/entities/year/actions';
 
 // Static fields that don't depend on external data
@@ -107,24 +107,31 @@ const staticFields = [
 const AddMoviePage = () => {
   const [types, setTypes] = useState<any[]>([]);
   const [years, setYears] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadOptions = async () => {
       try {
         const [typesResult, yearsResult] = await Promise.all([
-          getTypes(),
+          getAllTypes(),
           getYears()
         ]);
 
         if (typesResult.success && typesResult.data) {
           setTypes(typesResult.data);
+        } else {
+          console.error('Failed to load types:', typesResult.error);
         }
 
         if (yearsResult.success && yearsResult.data) {
           setYears(yearsResult.data);
+        } else {
+          console.error('Failed to load years:', yearsResult.error);
         }
       } catch (error) {
         console.error('Error loading options:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -138,14 +145,14 @@ const AddMoviePage = () => {
       label: 'Type',
       type: 'select' as const,
       required: true,
-      options: types.map(type => ({ value: type.id, label: type.name }))
+      options: Array.isArray(types) ? types.map(type => ({ value: type.id, label: type.name })) : []
     },
     {
       name: 'yearId',
       label: 'Year',
       type: 'select' as const,
       required: false,
-      options: years.map(year => ({ value: year.id, label: year.year.toString() }))
+      options: Array.isArray(years) ? years.map(year => ({ value: year.id, label: year.year.toString() })) : []
     }
   ], [types, years]);
 
@@ -160,6 +167,22 @@ const AddMoviePage = () => {
       return { success: false, error: 'Failed to create movie' };
     }
   };
+
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div className="row">
+          <div className="col-12">
+            <div className="text-center py-4">
+              <div className="spinner-border" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>

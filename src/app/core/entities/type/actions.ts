@@ -2,8 +2,8 @@
 
 import { db } from '../index';
 import { types } from './schema';
-import { eq } from 'drizzle-orm';
-import { createTypeSchema, updateTypeSchema, type CreateTypeInput, type UpdateTypeInput } from './schema';
+import { eq, desc, like, sql } from 'drizzle-orm';
+import { createTypeSchema, updateTypeSchema, typeFilterSchema, type CreateTypeInput, type UpdateTypeInput, type TypeFilterInput } from './schema';
 
 // Create a new type
 export async function createType(data: CreateTypeInput) {
@@ -23,14 +23,52 @@ export async function createType(data: CreateTypeInput) {
   }
 }
 
-// Get all types
-export async function getTypes() {
+// Get all types with filtering and pagination
+export async function getTypes(filters: TypeFilterInput = { page: 1, limit: 10 }) {
   try {
-    const typesList = await db.select().from(types).orderBy(types.name);
+    const validatedFilters = typeFilterSchema.parse(filters);
+    const { page = 1, limit = 10, search } = validatedFilters;
+    const offset = (page - 1) * limit;
     
-    return { success: true, data: typesList };
+    let whereClause = undefined;
+    if (search) {
+      whereClause = like(types.name, `%${search}%`);
+    }
+    
+    const typesList = await db.select().from(types)
+      .where(whereClause)
+      .orderBy(desc(types.createdAt))
+      .limit(limit)
+      .offset(offset);
+    
+    const totalCountResult = await db.select({ count: sql`count(*)` }).from(types).where(whereClause);
+    const totalCount = totalCountResult[0] ? Number(totalCountResult[0].count) : 0;
+    
+    return {
+      success: true,
+      data: {
+        types: typesList,
+        pagination: {
+          page,
+          limit,
+          total: totalCount,
+          totalPages: Math.ceil(totalCount / limit)
+        }
+      }
+    };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Failed to get types' };
+  }
+}
+
+// Get all types (for dropdowns)
+export async function getAllTypes() {
+  try {
+    const allTypes = await db.select().from(types).orderBy(types.name);
+    
+    return { success: true, data: allTypes };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to get all types' };
   }
 }
 

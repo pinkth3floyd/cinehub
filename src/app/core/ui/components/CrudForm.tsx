@@ -41,7 +41,9 @@ const CrudForm: React.FC<CrudFormProps> = ({
   const memoizedInitialData = useMemo(() => initialData, [JSON.stringify(initialData)]);
 
   useEffect(() => {
-    setFormData(memoizedInitialData);
+    if (memoizedInitialData && typeof memoizedInitialData === 'object') {
+      setFormData(memoizedInitialData);
+    }
   }, [memoizedInitialData]);
 
   const handleInputChange = (name: string, value: unknown) => {
@@ -74,12 +76,14 @@ const CrudForm: React.FC<CrudFormProps> = ({
   const validateForm = (): boolean => {
     const newErrors: { [key: string]: string } = {};
 
-    fields.forEach((field) => {
-      const error = validateField(field, formData[field.name]);
-      if (error) {
-        newErrors[field.name] = error;
-      }
-    });
+    if (fields && Array.isArray(fields)) {
+      fields.forEach((field) => {
+        const error = validateField(field, formData[field.name]);
+        if (error) {
+          newErrors[field.name] = error;
+        }
+      });
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -97,16 +101,17 @@ const CrudForm: React.FC<CrudFormProps> = ({
     try {
       const result = await onSubmit(formData);
       
-      if (result.success) {
+      if (result && result.success) {
         if (successRedirect) {
           router.push(successRedirect);
         } else {
           router.back();
         }
       } else {
-        setErrors({ submit: result.error || 'An error occurred' });
+        setErrors({ submit: result?.error || 'An error occurred' });
       }
-    } catch {
+    } catch (error) {
+      console.error('Form submission error:', error);
       setErrors({ submit: 'An error occurred while saving' });
     } finally {
       setIsSubmitting(false);
@@ -141,7 +146,7 @@ const CrudForm: React.FC<CrudFormProps> = ({
             required={field.required}
           >
             <option value="">Select {field.label}</option>
-            {field.options?.map((option) => (
+            {field.options && Array.isArray(field.options) && field.options.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
@@ -192,6 +197,15 @@ const CrudForm: React.FC<CrudFormProps> = ({
         );
     }
   };
+
+  // Ensure fields is an array
+  if (!fields || !Array.isArray(fields)) {
+    return (
+      <div className="alert alert-danger" role="alert">
+        Invalid form configuration
+      </div>
+    );
+  }
 
   return (
     <>

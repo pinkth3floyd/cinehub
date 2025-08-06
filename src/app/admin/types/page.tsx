@@ -18,13 +18,26 @@ const TypesPage = () => {
   const router = useRouter();
   const [types, setTypes] = useState<Type[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0
+  });
 
-  const loadTypes = async () => {
+  const loadTypes = async (page: number = 1, search?: string) => {
     setLoading(true);
     try {
-      const result = await getTypes();
+      const result = await getTypes({
+        page,
+        limit: 10,
+        search
+      });
       if (result.success && result.data) {
-        setTypes(result.data);
+        setTypes(result.data.types);
+        setPagination(result.data.pagination);
       } else {
         console.error('Failed to load types:', result.error);
       }
@@ -36,23 +49,19 @@ const TypesPage = () => {
   };
 
   useEffect(() => {
-    loadTypes();
-  }, []);
+    loadTypes(currentPage, searchTerm);
+  }, [currentPage, searchTerm]);
 
   const handleSearch = (search: string) => {
-    // Filter types locally since getTypes doesn't support search
-    const filtered = types.filter(type => 
-      type.name.toLowerCase().includes(search.toLowerCase()) ||
-      type.slug.toLowerCase().includes(search.toLowerCase())
-    );
-    setTypes(filtered);
+    setSearchTerm(search);
+    setCurrentPage(1);
   };
 
   const handleDelete = async (id: string) => {
     try {
       const result = await deleteType(id);
       if (result.success) {
-        loadTypes();
+        loadTypes(currentPage, searchTerm);
       } else {
         alert('Failed to delete type: ' + result.error);
       }
@@ -112,6 +121,13 @@ const TypesPage = () => {
             onView={handleView}
             addLink="/admin/types/add"
             isLoading={loading}
+            pagination={{
+              page: pagination.page,
+              limit: pagination.limit,
+              total: pagination.total,
+              totalPages: pagination.totalPages,
+              onPageChange: setCurrentPage
+            }}
           />
         </div>
       </div>

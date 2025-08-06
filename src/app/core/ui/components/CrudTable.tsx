@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import DeleteConfirmModal from './DeleteConfirmModal';
 
 interface CrudTableProps {
   title: string;
@@ -38,19 +39,39 @@ const CrudTable: React.FC<CrudTableProps> = ({
   isLoading = false,
   pagination
 }) => {
-  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    itemId: string | null;
+    itemName: string;
+  }>({
+    isOpen: false,
+    itemId: null,
+    itemName: ''
+  });
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleDelete = (id: string) => {
-    if (deleteConfirm === id) {
-      onDelete?.(id);
-      setDeleteConfirm(null);
-    } else {
-      setDeleteConfirm(id);
+  const handleDeleteClick = (id: string, name: string) => {
+    setDeleteModal({
+      isOpen: true,
+      itemId: id,
+      itemName: name
+    });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteModal.itemId || !onDelete) return;
+    
+    setIsDeleting(true);
+    try {
+      await onDelete(deleteModal.itemId);
+      setDeleteModal({ isOpen: false, itemId: null, itemName: '' });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
-  const cancelDelete = () => {
-    setDeleteConfirm(null);
+  const handleDeleteCancel = () => {
+    setDeleteModal({ isOpen: false, itemId: null, itemName: '' });
   };
 
   const renderValue = (column: { key: string; render?: (value: any, item: any) => React.ReactNode }, item: any) => {
@@ -101,154 +122,147 @@ const CrudTable: React.FC<CrudTableProps> = ({
   };
 
   return (
-    <div className="dashbox">
-      <div className="dashbox__title">
-        <h3>
-          <i className={icon}></i> {title}
-        </h3>
-        <div className="dashbox__wrap">
-          {addLink && (
-            <Link className="dashbox__more" href={addLink}>
-              Add New
-            </Link>
-          )}
-        </div>
-      </div>
-
-      <div className="dashbox__table-wrap">
-        {isLoading ? (
-          <div className="text-center py-4">
-            <div className="spinner-border" role="status">
-              <span className="visually-hidden">Loading...</span>
-            </div>
+    <>
+      <div className="dashbox">
+        <div className="dashbox__title">
+          <h3>
+            <i className={icon}></i> {title}
+          </h3>
+          <div className="dashbox__wrap">
+            {addLink && (
+              <Link className="dashbox__more" href={addLink}>
+                Add New
+              </Link>
+            )}
           </div>
-        ) : (
-          <>
-            <table className="dashbox__table">
-              <thead>
-                <tr>
-                  {columns.map((column) => (
-                    <th key={column.key}>{column.label}</th>
-                  ))}
-                  <th>ACTIONS</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.map((item) => (
-                  <tr key={String(item.id)}>
+        </div>
+
+        <div className="dashbox__table-wrap">
+          {isLoading ? (
+            <div className="text-center py-4">
+              <div className="spinner-border" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
+            </div>
+          ) : (
+            <>
+              <table className="dashbox__table">
+                <thead>
+                  <tr>
                     {columns.map((column) => (
-                      <td key={column.key}>
-                        {renderValue(column, item)}
-                      </td>
+                      <th key={column.key}>{column.label}</th>
                     ))}
-                    <td>
-                      <div className="dashbox__table-text">
-                        <div className="action-buttons">
-                          {onView && (
-                            <button
-                              className="action-btn action-btn--view"
-                              onClick={() => onView(String(item.id))}
-                              title="View"
-                            >
-                              <i className="ti ti-eye"></i>
-                            </button>
-                          )}
-                          {onEdit && (
-                            <button
-                              className="action-btn action-btn--edit"
-                              onClick={() => onEdit(String(item.id))}
-                              title="Edit"
-                            >
-                              <i className="ti ti-edit"></i>
-                            </button>
-                          )}
-                          {onDelete && (
-                            deleteConfirm === item.id ? (
-                              <div className="action-buttons">
-                                <button
-                                  className="action-btn action-btn--confirm"
-                                  onClick={() => handleDelete(String(item.id))}
-                                  title="Confirm Delete"
-                                >
-                                  <i className="ti ti-check"></i>
-                                </button>
-                                <button
-                                  className="action-btn action-btn--cancel"
-                                  onClick={cancelDelete}
-                                  title="Cancel"
-                                >
-                                  <i className="ti ti-x"></i>
-                                </button>
-                              </div>
-                            ) : (
+                    <th>ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.map((item) => (
+                    <tr key={String(item.id)}>
+                      {columns.map((column) => (
+                        <td key={column.key}>
+                          {renderValue(column, item)}
+                        </td>
+                      ))}
+                      <td>
+                        <div className="dashbox__table-text">
+                          <div className="action-buttons">
+                            {onView && (
+                              <button
+                                className="action-btn action-btn--view"
+                                onClick={() => onView(String(item.id))}
+                                title="View"
+                              >
+                                <i className="ti ti-eye"></i>
+                              </button>
+                            )}
+                            {onEdit && (
+                              <button
+                                className="action-btn action-btn--edit"
+                                onClick={() => onEdit(String(item.id))}
+                                title="Edit"
+                              >
+                                <i className="ti ti-edit"></i>
+                              </button>
+                            )}
+                            {onDelete && (
                               <button
                                 className="action-btn action-btn--delete"
-                                onClick={() => handleDelete(String(item.id))}
+                                onClick={() => handleDeleteClick(String(item.id), item.name || item.title || 'this item')}
                                 title="Delete"
                               >
                                 <i className="ti ti-trash"></i>
                               </button>
-                            )
-                          )}
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
 
-            {pagination && pagination.totalPages > 1 && (
-              <div className="d-flex justify-content-between align-items-center mt-3">
-                <div>
-                  Showing {((pagination.page - 1) * pagination.limit) + 1} to{' '}
-                  {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
-                  {pagination.total} entries
-                </div>
-                <nav>
-                  <ul className="pagination pagination-sm mb-0">
-                    <li className={`page-item ${pagination.page === 1 ? 'disabled' : ''}`}>
-                      <button
-                        className="page-link"
-                        onClick={() => pagination.onPageChange(pagination.page - 1)}
-                        disabled={pagination.page === 1}
-                      >
-                        Previous
-                      </button>
-                    </li>
-                    {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                      const page = i + 1;
-                      return (
-                        <li
-                          key={page}
-                          className={`page-item ${pagination.page === page ? 'active' : ''}`}
+              {pagination && pagination.totalPages > 1 && (
+                <div className="d-flex justify-content-between align-items-center mt-3">
+                  <div>
+                    Showing {((pagination.page - 1) * pagination.limit) + 1} to{' '}
+                    {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
+                    {pagination.total} entries
+                  </div>
+                  <nav>
+                    <ul className="pagination pagination-sm mb-0">
+                      <li className={`page-item ${pagination.page === 1 ? 'disabled' : ''}`}>
+                        <button
+                          className="page-link"
+                          onClick={() => pagination.onPageChange(pagination.page - 1)}
+                          disabled={pagination.page === 1}
                         >
-                          <button
-                            className="page-link"
-                            onClick={() => pagination.onPageChange(page)}
+                          Previous
+                        </button>
+                      </li>
+                      {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                        const page = i + 1;
+                        return (
+                          <li
+                            key={page}
+                            className={`page-item ${pagination.page === page ? 'active' : ''}`}
                           >
-                            {page}
-                          </button>
-                        </li>
-                      );
-                    })}
-                    <li className={`page-item ${pagination.page === pagination.totalPages ? 'disabled' : ''}`}>
-                      <button
-                        className="page-link"
-                        onClick={() => pagination.onPageChange(pagination.page + 1)}
-                        disabled={pagination.page === pagination.totalPages}
-                      >
-                        Next
-                      </button>
-                    </li>
-                  </ul>
-                </nav>
-              </div>
-            )}
-          </>
-        )}
+                            <button
+                              className="page-link"
+                              onClick={() => pagination.onPageChange(page)}
+                            >
+                              {page}
+                            </button>
+                          </li>
+                        );
+                      })}
+                      <li className={`page-item ${pagination.page === pagination.totalPages ? 'disabled' : ''}`}>
+                        <button
+                          className="page-link"
+                          onClick={() => pagination.onPageChange(pagination.page + 1)}
+                          disabled={pagination.page === pagination.totalPages}
+                        >
+                          Next
+                        </button>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
-    </div>
+
+      <DeleteConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Confirm Delete"
+        message="Are you sure you want to delete"
+        itemName={deleteModal.itemName}
+        isLoading={isDeleting}
+      />
+    </>
   );
 };
 

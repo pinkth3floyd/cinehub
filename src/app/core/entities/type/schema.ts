@@ -22,8 +22,15 @@ export const updateTypeSchema = z.object({
   slug: z.string().min(2, 'Slug must be at least 2 characters').max(50, 'Slug must be less than 50 characters').optional(),
 });
 
+export const typeFilterSchema = z.object({
+  search: z.string().optional(),
+  page: z.number().min(1).default(1),
+  limit: z.number().min(1).max(100).default(10),
+});
+
 // TypeScript types
 export type Type = typeof types.$inferSelect;
 export type NewType = typeof types.$inferInsert;
 export type CreateTypeInput = z.infer<typeof createTypeSchema>;
 export type UpdateTypeInput = z.infer<typeof updateTypeSchema>;
+export type TypeFilterInput = z.infer<typeof typeFilterSchema>;

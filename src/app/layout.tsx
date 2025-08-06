@@ -59,6 +59,7 @@ export default function RootLayout({
         <Script src="/core/assets/js/photoswipe.min.js" strategy="afterInteractive" />
         <Script src="/core/assets/js/photoswipe-ui-default.min.js" strategy="afterInteractive" />
         <Script src="/core/assets/js/main.js" strategy="afterInteractive" />
+        <Script src="/core/assets/js/admin.js" strategy="afterInteractive" />
       </body>
     </html>
     </TanstackProvider>
