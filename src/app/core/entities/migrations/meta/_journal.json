@@ -1,12 +1,26 @@
 {
-  "version": "7",
+  "version": "6",
   "dialect": "sqlite",
   "entries": [
     {
       "idx": 0,
       "version": "6",
       "when": 1754413118241,
-      "tag": "0000_marvelous_orphan",
+      "tag": "1ecdf884-fdda-4f90-b507-0d44284847fc",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1754476671238,
+      "tag": "0001_shocking_blue_marvel",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1754476767721,
+      "tag": "0002_fantastic_darkstar",
       "breakpoints": true
     }
   ]

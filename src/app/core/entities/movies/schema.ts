@@ -19,6 +19,9 @@ export const movies = sqliteTable('movies', {
   featured: integer('featured', { mode: 'boolean' }).notNull().default(false),
   typeId: text('type_id').notNull(),
   yearId: text('year_id'),
+  genreId: text('genre_id'),
+  server: text('server'),
+  link: text('link'),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
 });
@@ -34,11 +37,20 @@ export const createMovieSchema = z.object({
   trailer: z.string().url('Invalid trailer URL').optional(),
   duration: z.number().min(1, 'Duration must be at least 1 minute').optional(),
   rating: z.number().min(0).max(10).default(0),
-  releaseDate: z.date().optional(),
+  releaseDate: z.union([z.date(), z.string()]).transform((val) => {
+    if (typeof val === 'string' && val !== '') {
+      return new Date(val);
+    }
+    return val;
+  }).optional(),
   status: z.enum(['draft', 'published', 'archived']).default('draft'),
   featured: z.boolean().default(false),
   typeId: z.string().min(1, 'Type is required'),
   yearId: z.string().optional(),
+  genreId: z.string().optional(),
+  server: z.string().optional(),
+  link: z.string().url('Invalid link URL').optional(),
+  tagIds: z.array(z.string()).optional(),
 });
 
 export const updateMovieSchema = z.object({
@@ -51,11 +63,20 @@ export const updateMovieSchema = z.object({
   trailer: z.string().url('Invalid trailer URL').optional(),
   duration: z.number().min(1, 'Duration must be at least 1 minute').optional(),
   rating: z.number().min(0).max(10).optional(),
-  releaseDate: z.date().optional(),
+  releaseDate: z.union([z.date(), z.string()]).transform((val) => {
+    if (typeof val === 'string' && val !== '') {
+      return new Date(val);
+    }
+    return val;
+  }).optional(),
   status: z.enum(['draft', 'published', 'archived']).optional(),
   featured: z.boolean().optional(),
   typeId: z.string().min(1, 'Type is required').optional(),
   yearId: z.string().optional(),
+  genreId: z.string().optional(),
+  server: z.string().optional(),
+  link: z.string().url('Invalid link URL').optional(),
+  tagIds: z.array(z.string()).optional(),
 });
 
 export const movieFilterSchema = z.object({
@@ -63,6 +84,7 @@ export const movieFilterSchema = z.object({
   status: z.enum(['draft', 'published', 'archived']).optional(),
   typeId: z.string().optional(),
   yearId: z.string().optional(),
+  genreId: z.string().optional(),
   featured: z.boolean().optional(),
   page: z.number().min(1).default(1),
   limit: z.number().min(1).max(100).default(10),

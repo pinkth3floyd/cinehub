@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import MultiSelect from './MultiSelect';
 
 interface FormField {
   name: string;
   label: string;
-  type: 'text' | 'email' | 'password' | 'number' | 'textarea' | 'select' | 'checkbox' | 'date';
+  type: 'text' | 'email' | 'password' | 'number' | 'textarea' | 'select' | 'checkbox' | 'date' | 'multiselect';
   required?: boolean;
   options?: { value: string; label: string }[];
   placeholder?: string;
@@ -46,10 +47,16 @@ const CrudForm: React.FC<CrudFormProps> = ({
     }
   }, [memoizedInitialData]);
 
-  const handleInputChange = (name: string, value: unknown) => {
+  const handleInputChange = (name: string, value: unknown, fieldType?: string) => {
+    // Convert string to number for number fields
+    let processedValue = value;
+    if (fieldType === 'number' && typeof value === 'string') {
+      processedValue = value === '' ? '' : Number(value);
+    }
+
     setFormData((prev: Record<string, unknown>) => ({
       ...prev,
-      [name]: value
+      [name]: processedValue
     }));
 
     // Clear error when user starts typing
@@ -99,7 +106,29 @@ const CrudForm: React.FC<CrudFormProps> = ({
     setIsSubmitting(true);
 
     try {
-      const result = await onSubmit(formData);
+      // Transform form data to ensure proper types
+      const transformedData = { ...formData };
+      fields.forEach(field => {
+        if (field.type === 'number' && transformedData[field.name] !== undefined) {
+          const value = transformedData[field.name];
+          if (typeof value === 'string' && value !== '') {
+            transformedData[field.name] = Number(value);
+          } else if (value === '') {
+            transformedData[field.name] = undefined;
+          }
+        }
+        
+        if (field.type === 'date' && transformedData[field.name] !== undefined) {
+          const value = transformedData[field.name];
+          if (typeof value === 'string' && value !== '') {
+            transformedData[field.name] = new Date(value);
+          } else if (value === '') {
+            transformedData[field.name] = undefined;
+          }
+        }
+      });
+
+      const result = await onSubmit(transformedData);
       
       if (result && result.success) {
         if (successRedirect) {
@@ -180,6 +209,30 @@ const CrudForm: React.FC<CrudFormProps> = ({
             value={String(value)}
             onChange={(e) => handleInputChange(field.name, e.target.value)}
             required={field.required}
+          />
+        );
+
+      case 'number':
+        return (
+          <input
+            type="number"
+            className={`sign__input ${error ? 'is-invalid' : ''}`}
+            name={field.name}
+            value={String(value)}
+            onChange={(e) => handleInputChange(field.name, e.target.value, 'number')}
+            placeholder={field.placeholder}
+            required={field.required}
+          />
+        );
+
+      case 'multiselect':
+        return (
+          <MultiSelect
+            options={field.options || []}
+            value={Array.isArray(value) ? value : []}
+            onChange={(newValue) => handleInputChange(field.name, newValue)}
+            placeholder={field.placeholder}
+            className={error ? 'is-invalid' : ''}
           />
         );
 

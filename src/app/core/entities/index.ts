@@ -4,6 +4,7 @@ import { createClient } from "@libsql/client";
 // Import all schemas
 import { users } from "./user/schema";
 import { movies } from "./movies/schema";
+import { movieGenres, movieTags } from "./movies/relationships";
 import { reviews } from "./reviews/schema";
 import { genres } from "./genre/schema";
 import { types } from "./type/schema";
@@ -21,6 +22,8 @@ export const db = drizzle(client, {
   schema: {
     users,
     movies,
+    movieGenres,
+    movieTags,
     reviews,
     genres,
     types,
@@ -33,6 +36,7 @@ export const db = drizzle(client, {
 // Export all schemas for use in other parts of the application
 export * from "./user/schema";
 export * from "./movies/schema";
+export * from "./movies/relationships";
 export * from "./reviews/schema";
 export * from "./genre/schema";
 export * from "./type/schema";

@@ -1,11 +1,11 @@
 'use server';
 
-'use server';
-
 import { db } from '../index';
 import { movies } from './schema';
-import { eq, desc, and, like, or, sql } from 'drizzle-orm';
+import { movieGenres, movieTags } from './relationships';
+import { eq, desc, and, like, or, sql, inArray } from 'drizzle-orm';
 import { createMovieSchema, updateMovieSchema, movieFilterSchema, type CreateMovieInput, type UpdateMovieInput, type MovieFilterInput } from './schema';
+import { type CreateMovieGenreInput, type CreateMovieTagInput } from './relationships';
 
 // Create a new movie
 export async function createMovie(data: CreateMovieInput) {
@@ -13,11 +13,24 @@ export async function createMovie(data: CreateMovieInput) {
     // Validate input
     const validatedData = createMovieSchema.parse(data);
     
+    // Extract tagIds for separate handling
+    const { tagIds, ...movieData } = validatedData;
+    
     // Create movie
     const [movie] = await db.insert(movies).values({
-      ...validatedData,
+      ...movieData,
       updatedAt: new Date(),
     }).returning();
+    
+    // Create movie-tag relationships if tagIds provided
+    if (tagIds && tagIds.length > 0) {
+      const movieTagData: CreateMovieTagInput[] = tagIds.map(tagId => ({
+        movieId: movie.id,
+        tagId
+      }));
+      
+      await db.insert(movieTags).values(movieTagData);
+    }
     
     return { success: true, data: movie };
   } catch (error) {
@@ -29,7 +42,7 @@ export async function createMovie(data: CreateMovieInput) {
 export async function getMovies(filters: MovieFilterInput = { page: 1, limit: 10 }) {
   try {
     const validatedFilters = movieFilterSchema.parse(filters);
-    const { page = 1, limit = 10, search, status, typeId, yearId, featured } = validatedFilters;
+    const { page = 1, limit = 10, search, status, typeId, yearId, genreId, featured } = validatedFilters;
     const offset = (page - 1) * limit;
     
     // Build where clause
@@ -54,6 +67,10 @@ export async function getMovies(filters: MovieFilterInput = { page: 1, limit: 10
     
     if (yearId) {
       conditions.push(eq(movies.yearId, yearId));
+    }
+    
+    if (genreId) {
+      conditions.push(eq(movies.genreId, genreId));
     }
     
     if (featured !== undefined) {
@@ -88,7 +105,7 @@ export async function getMovies(filters: MovieFilterInput = { page: 1, limit: 10
   }
 }
 
-// Get movie by ID
+// Get movie by ID with tags
 export async function getMovieById(id: string) {
   try {
     const [movie] = await db.select().from(movies).where(eq(movies.id, id));
@@ -97,7 +114,20 @@ export async function getMovieById(id: string) {
       return { success: false, error: 'Movie not found' };
     }
     
-    return { success: true, data: movie };
+    // Get movie tags
+    const movieTagsList = await db.select({
+      tagId: movieTags.tagId
+    }).from(movieTags).where(eq(movieTags.movieId, id));
+    
+    const tagIds = movieTagsList.map(mt => mt.tagId);
+    
+    return { 
+      success: true, 
+      data: { 
+        ...movie, 
+        tagIds 
+      } 
+    };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Failed to get movie' };
   }
@@ -124,13 +154,32 @@ export async function updateMovie(id: string, data: UpdateMovieInput) {
     // Validate input
     const validatedData = updateMovieSchema.parse(data);
     
+    // Extract tagIds for separate handling
+    const { tagIds, ...movieData } = validatedData;
+    
     const [movie] = await db.update(movies)
-      .set({ ...validatedData, updatedAt: new Date() })
+      .set({ ...movieData, updatedAt: new Date() })
       .where(eq(movies.id, id))
       .returning();
     
     if (!movie) {
       return { success: false, error: 'Movie not found' };
+    }
+    
+    // Update movie-tag relationships if tagIds provided
+    if (tagIds !== undefined) {
+      // Delete existing relationships
+      await db.delete(movieTags).where(eq(movieTags.movieId, id));
+      
+      // Create new relationships if tagIds provided
+      if (tagIds && tagIds.length > 0) {
+        const movieTagData: CreateMovieTagInput[] = tagIds.map(tagId => ({
+          movieId: id,
+          tagId
+        }));
+        
+        await db.insert(movieTags).values(movieTagData);
+      }
     }
     
     return { success: true, data: movie };
@@ -142,6 +191,10 @@ export async function updateMovie(id: string, data: UpdateMovieInput) {
 // Delete movie
 export async function deleteMovie(id: string) {
   try {
+    // Delete related records first
+    await db.delete(movieTags).where(eq(movieTags.movieId, id));
+    await db.delete(movieGenres).where(eq(movieGenres.movieId, id));
+    
     const [movie] = await db.delete(movies).where(eq(movies.id, id)).returning();
     
     if (!movie) {
@@ -151,6 +204,50 @@ export async function deleteMovie(id: string) {
     return { success: true, data: movie };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Failed to delete movie' };
+  }
+}
+
+// Get movie tags
+export async function getMovieTags(movieId: string) {
+  try {
+    const movieTagsList = await db.select({
+      tagId: movieTags.tagId
+    }).from(movieTags).where(eq(movieTags.movieId, movieId));
+    
+    return { success: true, data: movieTagsList.map(mt => mt.tagId) };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to get movie tags' };
+  }
+}
+
+// Add tags to movie
+export async function addTagsToMovie(movieId: string, tagIds: string[]) {
+  try {
+    const movieTagData: CreateMovieTagInput[] = tagIds.map(tagId => ({
+      movieId,
+      tagId
+    }));
+    
+    await db.insert(movieTags).values(movieTagData);
+    
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to add tags to movie' };
+  }
+}
+
+// Remove tags from movie
+export async function removeTagsFromMovie(movieId: string, tagIds: string[]) {
+  try {
+    await db.delete(movieTags)
+      .where(and(
+        eq(movieTags.movieId, movieId),
+        inArray(movieTags.tagId, tagIds)
+      ));
+    
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to remove tags from movie' };
   }
 }
 

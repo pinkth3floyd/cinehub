@@ -6,6 +6,8 @@ import CrudForm from '../../../core/ui/components/CrudForm';
 import { createMovie } from '../../../core/entities/movies/actions';
 import { getAllTypes } from '../../../core/entities/type/actions';
 import { getAllYears } from '../../../core/entities/year/actions';
+import { getAllGenres } from '../../../core/entities/genre/actions';
+import { getAllTags } from '../../../core/entities/tags/actions';
 
 // Static fields that don't depend on external data
 const staticFields = [
@@ -59,6 +61,20 @@ const staticFields = [
     placeholder: 'Enter trailer video URL'
   },
   {
+    name: 'server',
+    label: 'Server',
+    type: 'text' as const,
+    required: false,
+    placeholder: 'Enter movie server (e.g., Server 1, Server 2)'
+  },
+  {
+    name: 'link',
+    label: 'Movie Link',
+    type: 'text' as const,
+    required: false,
+    placeholder: 'Enter movie streaming/download link'
+  },
+  {
     name: 'duration',
     label: 'Duration (minutes)',
     type: 'number' as const,
@@ -107,14 +123,18 @@ const staticFields = [
 const AddMoviePage = () => {
   const [types, setTypes] = useState<any[]>([]);
   const [years, setYears] = useState<any[]>([]);
+  const [genres, setGenres] = useState<any[]>([]);
+  const [tags, setTags] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadOptions = async () => {
       try {
-        const [typesResult, yearsResult] = await Promise.all([
+        const [typesResult, yearsResult, genresResult, tagsResult] = await Promise.all([
           getAllTypes(),
-          getAllYears()
+          getAllYears(),
+          getAllGenres(),
+          getAllTags()
         ]);
 
         if (typesResult.success && typesResult.data) {
@@ -128,6 +148,18 @@ const AddMoviePage = () => {
         } else {
           console.error('Failed to load years:', yearsResult.error);
         }
+
+        if (genresResult.success && genresResult.data) {
+          setGenres(genresResult.data);
+        } else {
+          console.error('Failed to load genres:', genresResult.error);
+        }
+
+        if (tagsResult.success && tagsResult.data) {
+          setTags(tagsResult.data);
+        } else {
+          console.error('Failed to load tags:', tagsResult.error);
+        }
       } catch (error) {
         console.error('Error loading options:', error);
       } finally {
@@ -138,7 +170,7 @@ const AddMoviePage = () => {
     loadOptions();
   }, []);
 
-  // Memoize the dynamic fields that depend on types and years
+  // Memoize the dynamic fields that depend on external data
   const dynamicFields = useMemo(() => [
     {
       name: 'typeId',
@@ -153,8 +185,23 @@ const AddMoviePage = () => {
       type: 'select' as const,
       required: false,
       options: Array.isArray(years) ? years.map(year => ({ value: year.id, label: year.year.toString() })) : []
+    },
+    {
+      name: 'genreId',
+      label: 'Genre',
+      type: 'select' as const,
+      required: false,
+      options: Array.isArray(genres) ? genres.map(genre => ({ value: genre.id, label: genre.name })) : []
+    },
+    {
+      name: 'tagIds',
+      label: 'Tags',
+      type: 'multiselect' as const,
+      required: false,
+      placeholder: 'Select tags...',
+      options: Array.isArray(tags) ? tags.map(tag => ({ value: tag.id, label: tag.name })) : []
     }
-  ], [types, years]);
+  ], [types, years, genres, tags]);
 
   // Combine static and dynamic fields
   const fields = useMemo(() => [...staticFields, ...dynamicFields], [dynamicFields]);
