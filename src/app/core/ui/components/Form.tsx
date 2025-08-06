@@ -20,6 +20,7 @@ export interface FormProps {
   submitText?: string;
   className?: string;
   variant?: 'default' | 'modal' | 'search';
+  isLoading?: boolean;
 }
 
 export default function Form({
@@ -27,7 +28,8 @@ export default function Form({
   onSubmit,
   submitText = 'Submit',
   className = '',
-  variant = 'default'
+  variant = 'default',
+  isLoading = false
 }: FormProps) {
   const [formData, setFormData] = React.useState<Record<string, string>>({});
   const [errors, setErrors] = React.useState<Record<string, string>>({});
@@ -141,8 +143,16 @@ export default function Form({
         type="submit"
         variant="primary"
         className="sign__btn"
+        disabled={isLoading}
       >
-        {submitText}
+        {isLoading ? (
+          <>
+            <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            {submitText}
+          </>
+        ) : (
+          submitText
+        )}
       </Button>
     </form>
   );

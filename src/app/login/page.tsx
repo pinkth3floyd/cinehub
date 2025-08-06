@@ -3,6 +3,10 @@
 import { Header, Footer, Form, Section } from '../core/ui';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { adminLogin } from '../core/entities/auth/actions';
+import { Suspense } from 'react';
 
 const loginFields = [
   {
@@ -21,10 +25,26 @@ const loginFields = [
   }
 ];
 
-export default function LoginPage() {
+function LoginForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/admin';
+
+  const loginMutation = useMutation({
+    mutationFn: adminLogin,
+    onSuccess: (data) => {
+      if (data.success) {
+        // Redirect to admin dashboard or the original requested page
+        router.push(redirectTo);
+      }
+    },
+  });
+
   const handleLogin = (data: Record<string, string>) => {
-    console.log('Login attempt:', data);
-    // Handle login logic
+    loginMutation.mutate({
+      email: data.email,
+      password: data.password,
+    });
   };
 
   return (
@@ -48,22 +68,27 @@ export default function LoginPage() {
                       <h1>CineHub</h1>
                     </Link>
 
-                    <h3 className="sign__title">Sign in</h3>
+                    <h3 className="sign__title">Admin Sign in</h3>
 
                     <Form
                       fields={loginFields}
                       onSubmit={handleLogin}
-                      submitText="Sign in"
+                      submitText={loginMutation.isPending ? "Signing in..." : "Sign in"}
                       variant="default"
+                      isLoading={loginMutation.isPending}
                     />
 
-                    {/* <span className="sign__text">
-                      Don&apos;t have an account? <Link href="/signup">Sign up!</Link>
-                    </span> */}
+                    {loginMutation.error && (
+                      <div className="alert alert-danger mt-3">
+                        <i className="ti ti-alert-triangle me-2"></i>
+                        {loginMutation.error.message || 'Login failed. Please try again.'}
+                      </div>
+                    )}
 
-                    {/* <span className="sign__text">
-                      <Link href="/forgot">Forgot password?</Link>
-                    </span> */}
+                    <span className="sign__text">
+                      <i className="ti ti-info-circle me-2"></i>
+                      Use admin credentials from environment variables
+                    </span>
                   </div>
                 </div>
               </div>
@@ -74,5 +99,32 @@ export default function LoginPage() {
 
       <Footer />
     </>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="sign">
+        <div className="container">
+          <div className="row">
+            <div className="col-12">
+              <div className="sign__content">
+                <div className="sign__form">
+                  <div className="text-center py-5">
+                    <div className="spinner-border text-primary" role="status">
+                      <span className="visually-hidden">Loading...</span>
+                    </div>
+                    <p className="mt-3">Loading login form...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }
