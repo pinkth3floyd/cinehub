@@ -2,6 +2,7 @@
 
 import React from 'react';
 import MovieVideoPlayer from '../details/[id]/components/MovieVideoPlayer';
+import { contentLockerConfig } from '../core/config/contentLocker';
 
 export default function TestLockerPage() {
   // Test video URL and duration
@@ -61,68 +62,41 @@ export default function TestLockerPage() {
         <p><strong>Expected Behavior:</strong> Locker appears immediately when play is clicked</p>
         
         <div style={{ marginTop: '20px', padding: '15px', background: '#e9ecef', borderRadius: '5px' }}>
-          <h4>CPAGrip Debug:</h4>
-          <button 
-            onClick={() => {
-              console.log('Testing CPAGrip script directly...');
-              const script = document.createElement('script');
-              script.type = 'text/javascript';
-              script.innerHTML = 'var lck = false;';
-              document.head.appendChild(script);
-              
-              const script2 = document.createElement('script');
-              script2.type = 'text/javascript';
-              script2.src = 'https://epctrk.com/script_include.php?id=1741216';
-              script2.onload = () => {
-                console.log('CPAGrip script loaded directly');
-                const script3 = document.createElement('script');
-                script3.type = 'text/javascript';
-                script3.innerHTML = `
-                  console.log('Direct CPAGrip test - lck =', lck);
-                  if (!lck) {
-                    console.log('Direct test: lck is false, should redirect');
-                    // window.location.href = 'https://epctrk.com/help/ablk.php?lkt=2';
-                  } else {
-                    console.log('Direct test: lck is true');
-                  }
-                `;
-                document.head.appendChild(script3);
-              };
-              script2.onerror = () => {
-                console.error('Direct CPAGrip test failed to load');
-              };
-              document.head.appendChild(script2);
-            }}
-            style={{
-              background: '#dc3545',
-              color: 'white',
-              border: 'none',
-              padding: '8px 16px',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              marginRight: '10px'
-            }}
-          >
-            Test CPAGrip Script Directly
-          </button>
+          <h4>BitLabs Web Integration:</h4>
+          <p><strong>App Token:</strong> {contentLockerConfig.bitlabs.appToken}</p>
+          <p><strong>Integration Type:</strong> Web iframe integration</p>
+          <p><strong>Status:</strong> Modern web-based CPA platform</p>
           
           <button 
             onClick={() => {
-              console.log('Testing CPAGrip URL directly...');
-              // Try to fetch the CPAGrip script content
-              fetch('https://epctrk.com/script_include.php?id=1741216')
-                .then(response => {
-                  console.log('CPAGrip URL response status:', response.status);
-                  return response.text();
-                })
-                .then(content => {
-                  console.log('CPAGrip script content length:', content.length);
-                  console.log('CPAGrip script preview:', content.substring(0, 200));
-                })
-                .catch(error => {
-                  console.error('Failed to fetch CPAGrip script:', error);
-                });
+              console.log('Testing BitLabs web integration...');
+              const iframe = document.createElement('iframe');
+              iframe.src = `https://api.bitlabs.ai/survey?app_token=${contentLockerConfig.bitlabs.appToken}&user_id=test_${Date.now()}`;
+              iframe.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 80%;
+                height: 80%;
+                border: none;
+                border-radius: 12px;
+                z-index: 10000;
+              `;
+              iframe.onload = () => {
+                console.log('BitLabs survey iframe loaded successfully');
+              };
+              iframe.onerror = () => {
+                console.error('Failed to load BitLabs survey iframe');
+              };
+              document.body.appendChild(iframe);
+              
+              // Remove iframe after 5 seconds for testing
+              setTimeout(() => {
+                if (document.body.contains(iframe)) {
+                  document.body.removeChild(iframe);
+                }
+              }, 5000);
             }}
             style={{
               background: '#28a745',
@@ -131,60 +105,14 @@ export default function TestLockerPage() {
               padding: '8px 16px',
               borderRadius: '4px',
               cursor: 'pointer',
-              fontSize: '14px',
-              marginRight: '10px'
-            }}
-          >
-            Test CPAGrip URL
-          </button>
-          
-          <button 
-            onClick={() => {
-              console.log('Testing different CPAGrip script IDs...');
-              const testIds = ['1741216', '1741217', '1741218', '1741219'];
-              
-              testIds.forEach((id, index) => {
-                setTimeout(() => {
-                  console.log(`Testing CPAGrip ID: ${id}`);
-                  const script = document.createElement('script');
-                  script.type = 'text/javascript';
-                  script.innerHTML = `var lck_${id} = false;`;
-                  document.head.appendChild(script);
-                  
-                  const script2 = document.createElement('script');
-                  script2.type = 'text/javascript';
-                  script2.src = `https://epctrk.com/script_include.php?id=${id}`;
-                  script2.onload = () => {
-                    console.log(`CPAGrip ID ${id} loaded successfully`);
-                    const script3 = document.createElement('script');
-                    script3.type = 'text/javascript';
-                    script3.innerHTML = `
-                      console.log('CPAGrip ID ${id} - lck =', lck_${id});
-                    `;
-                    document.head.appendChild(script3);
-                  };
-                  script2.onerror = () => {
-                    console.error(`CPAGrip ID ${id} failed to load`);
-                  };
-                  document.head.appendChild(script2);
-                }, index * 1000);
-              });
-            }}
-            style={{
-              background: '#007bff',
-              color: 'white',
-              border: 'none',
-              padding: '8px 16px',
-              borderRadius: '4px',
-              cursor: 'pointer',
               fontSize: '14px'
             }}
           >
-            Test Multiple IDs
+            Test BitLabs Survey
           </button>
           
           <p style={{ fontSize: '12px', marginTop: '10px', color: '#6c757d' }}>
-            Click these buttons to test CPAGrip script loading and validity
+            Click this to test the BitLabs survey iframe integration
           </p>
         </div>
       </div>

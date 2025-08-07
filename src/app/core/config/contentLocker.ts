@@ -1,19 +1,18 @@
 // Content Locker Configuration
 export const contentLockerConfig = {
-  // CPAGrip settings
-  cpagrip: {
-    scriptId: '1741219', // Your CPAGrip script ID
-    scriptUrl: 'https://epctrk.com/script_include.php',
-    helpUrl: 'https://epctrk.com/help/ablk.php?lkt=2',
-    noscriptUrl: 'https://epctrk.com/help/enable_javascript.php?lkt=2',
-    // Alternative script IDs to try if the main one doesn't work
-    alternativeIds: ['1741219']
+  // BitLabs settings
+  bitlabs: {
+    appToken: '35c5e7d5-4246-4f25-8785-26ee309a03e5',
+    secretKey: 'LyxH6v6G6zMY4DQnz0sumLzABywNfhzu',
+    serverToServerKey: 'j1VBW1uLg4UnyL5f65mSFtpVlU1QTv5V',
+    apiUrl: 'https://api.bitlabs.ai',
+    sdkUrl: 'https://api.bitlabs.ai/js/sdk.js' // Alternative SDK URL
   },
   
   // Trigger settings
   trigger: {
     percentage: 0, // Percentage of video duration to trigger locker (0 = immediate)
-    enabled: true, // Enable/disable content locker
+    enabled: false, // Enable/disable content locker
     onlyOnDirectVideos: false, // Only show locker on direct video files, not iframes
     skipIfNoDuration: false // Skip locker if movie duration is not available
   },

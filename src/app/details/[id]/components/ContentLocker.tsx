@@ -7,7 +7,6 @@ import { contentLockerConfig } from '../../../core/config/contentLocker';
 declare global {
   interface Window {
     completeContentLocker?: () => void;
-    cpagripComplete?: () => void;
     hideLoadingOverlay?: () => void;
     showFallbackLocker?: () => void;
   }
@@ -26,13 +25,13 @@ export default function ContentLocker({ isVisible, onComplete }: ContentLockerPr
     console.log('ContentLocker: isVisible changed to', isVisible);
     
     if (isVisible) {
-      console.log('ContentLocker: Starting locker process...');
+      console.log('ContentLocker: Starting BitLabs locker process...');
       setIsLoading(true);
       
-      // Create a container for CPAGrip to inject its content
-      const lockerContainer = document.createElement('div');
-      lockerContainer.id = 'cpagrip-locker-container';
-      lockerContainer.style.cssText = `
+      // Create BitLabs survey container
+      const surveyContainer = document.createElement('div');
+      surveyContainer.id = 'bitlabs-survey-container';
+      surveyContainer.style.cssText = `
         position: fixed;
         top: 0;
         left: 0;
@@ -44,141 +43,66 @@ export default function ContentLocker({ isVisible, onComplete }: ContentLockerPr
         align-items: center;
         justify-content: center;
       `;
-      document.body.appendChild(lockerContainer);
-      
-      // Try multiple approaches for CPAGrip integration
-      console.log('ContentLocker: Trying CPAGrip integration...');
-      
-      // Approach 1: Try iframe embed first
-      const iframe = document.createElement('iframe');
-      iframe.src = 'https://epctrk.com/help/ablk.php?lkt=2';
-      iframe.style.cssText = `
-        width: 100%;
-        height: 100%;
-        border: none;
-        border-radius: 12px;
-      `;
-      iframe.onload = () => {
-        console.log('ContentLocker: CPAGrip iframe loaded');
-        window.hideLoadingOverlay && window.hideLoadingOverlay();
-      };
-      iframe.onerror = () => {
-        console.log('ContentLocker: CPAGrip iframe failed, trying script approach');
-        // Remove iframe and try script approach
-        lockerContainer.removeChild(iframe);
-        tryScriptApproach();
-      };
-      lockerContainer.appendChild(iframe);
-      
-      // Approach 2: Script-based approach (fallback)
-      function tryScriptApproach() {
-        console.log('ContentLocker: Trying script-based CPAGrip...');
-        
-        // Use the exact CPAGrip code provided by user
-        const script1 = document.createElement('script');
-        script1.type = 'text/javascript';
-        script1.innerHTML = 'var lck = false;';
-        document.head.appendChild(script1);
-        console.log('ContentLocker: Added initial script');
+      document.body.appendChild(surveyContainer);
 
-        const script2 = document.createElement('script');
-        script2.type = 'text/javascript';
-        script2.src = 'https://epctrk.com/script_include.php?id=1741216';
-        script2.onload = () => {
-          console.log('ContentLocker: CPAGrip script loaded successfully');
+      // Initialize BitLabs web integration
+      const initializeBitLabs = async () => {
+        try {
+          console.log('ContentLocker: Initializing BitLabs web integration');
           
-          // Approach 3: Try to manually trigger CPAGrip
-          const script3 = document.createElement('script');
-          script3.type = 'text/javascript';
-          script3.innerHTML = `
-            console.log('ContentLocker: CPAGrip script executed, lck =', lck);
-            
-            // Try to manually trigger CPAGrip if it's available
-            try {
-              if (typeof window.cpagrip !== 'undefined') {
-                console.log('ContentLocker: CPAGrip object found, trying to show');
-                window.cpagrip.show && window.cpagrip.show();
-              } else {
-                console.log('ContentLocker: CPAGrip object not found');
-              }
-            } catch (e) {
-              console.log('ContentLocker: Error trying to show CPAGrip:', e);
-            }
-            
-            // Approach 4: Monitor for CPAGrip content with more selectors
-            let checkInterval = setInterval(() => {
-              const cpagripSelectors = [
-                '#cpagrip-locker-container .cpagrip-content',
-                '.cpagrip-overlay',
-                '[class*="cpagrip"]',
-                '[class*="survey"]',
-                '[class*="locker"]',
-                '[id*="cpagrip"]',
-                '[id*="survey"]',
-                'iframe[src*="epctrk"]',
-                'iframe[src*="cpagrip"]'
-              ];
-              
-              let cpagripFound = false;
-              for (let selector of cpagripSelectors) {
-                if (document.querySelector(selector)) {
-                  console.log('ContentLocker: CPAGrip content found with selector:', selector);
-                  cpagripFound = true;
-                  break;
-                }
-              }
-              
-              if (cpagripFound) {
-                console.log('ContentLocker: CPAGrip locker detected, monitoring...');
-                clearInterval(checkInterval);
-                window.hideLoadingOverlay && window.hideLoadingOverlay();
-              }
-            }, 100);
-            
-            // Set up completion callback for when user completes CPAGrip
-            window.cpagripComplete = function() {
-              console.log('ContentLocker: CPAGrip completed by user');
-              clearInterval(checkInterval);
-              window.completeContentLocker && window.completeContentLocker();
-            };
-            
-            // Approach 5: Try to redirect to CPAGrip if it doesn't show
-            setTimeout(() => {
-              console.log('ContentLocker: Checking if CPAGrip appeared...');
-              const hasCPAGripContent = document.querySelector('#cpagrip-locker-container .cpagrip-content') || 
-                                      document.querySelector('.cpagrip-overlay') ||
-                                      document.querySelector('[class*="cpagrip"]') ||
-                                      document.querySelector('[class*="survey"]') ||
-                                      document.querySelector('iframe[src*="epctrk"]');
-              
-              if (!hasCPAGripContent) {
-                console.log('ContentLocker: CPAGrip not showing, trying redirect approach...');
-                clearInterval(checkInterval);
-                
-                // Try the original CPAGrip redirect logic
-                if (!lck) {
-                  console.log('ContentLocker: lck is false, trying redirect...');
-                  try {
-                    window.location.href = 'https://epctrk.com/help/ablk.php?lkt=2';
-                  } catch (e) {
-                    console.log('ContentLocker: Redirect failed, showing fallback');
-                    window.showFallbackLocker && window.showFallbackLocker();
-                  }
-                } else {
-                  console.log('ContentLocker: lck is true but no content, showing fallback');
-                  window.showFallbackLocker && window.showFallbackLocker();
-                }
-              }
-            }, 5000);
+          // Create BitLabs survey iframe
+          const iframe = document.createElement('iframe');
+          iframe.src = `https://api.bitlabs.ai/survey?app_token=${contentLockerConfig.bitlabs.appToken}&user_id=user_${Date.now()}`;
+          iframe.style.cssText = `
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 12px;
           `;
-          document.head.appendChild(script3);
-        };
-        script2.onerror = () => {
-          console.error('ContentLocker: Failed to load CPAGrip script');
+          iframe.allow = 'camera; microphone; geolocation';
+          
+          iframe.onload = () => {
+            console.log('ContentLocker: BitLabs survey iframe loaded');
+            window.hideLoadingOverlay && window.hideLoadingOverlay();
+          };
+          
+          iframe.onerror = () => {
+            console.error('ContentLocker: BitLabs survey iframe failed to load');
+            window.showFallbackLocker && window.showFallbackLocker();
+          };
+          
+          surveyContainer.appendChild(iframe);
+
+          // Set up message listener for iframe communication
+          const handleMessage = (event: MessageEvent) => {
+            if (event.origin !== 'https://api.bitlabs.ai') return;
+            
+            console.log('ContentLocker: Received message from BitLabs:', event.data);
+            
+            if (event.data.type === 'survey_completed') {
+              console.log('ContentLocker: BitLabs survey completed');
+              window.completeContentLocker && window.completeContentLocker();
+            } else if (event.data.type === 'survey_closed') {
+              console.log('ContentLocker: BitLabs survey closed');
+              window.completeContentLocker && window.completeContentLocker();
+            }
+          };
+
+          window.addEventListener('message', handleMessage);
+
+          // Fallback: if survey doesn't load after 10 seconds
+          setTimeout(() => {
+            if (!iframe.contentWindow) {
+              console.log('ContentLocker: BitLabs survey timeout, showing fallback');
+              window.showFallbackLocker && window.showFallbackLocker();
+            }
+          }, 10000);
+
+        } catch (error) {
+          console.error('ContentLocker: Failed to initialize BitLabs:', error);
           window.showFallbackLocker && window.showFallbackLocker();
-        };
-        document.head.appendChild(script2);
-      }
+        }
+      };
 
       // Set up callbacks
       (window as any).hideLoadingOverlay = () => {
@@ -190,39 +114,33 @@ export default function ContentLocker({ isVisible, onComplete }: ContentLockerPr
         console.log('ContentLocker: Showing fallback locker');
         setIsLoading(false);
         setShowFallback(true);
+        // Remove BitLabs container
+        const container = document.getElementById('bitlabs-survey-container');
+        if (container) {
+          document.body.removeChild(container);
+        }
       };
 
       (window as any).completeContentLocker = () => {
         console.log('ContentLocker: Completion callback triggered');
         setIsLoading(false);
         setShowFallback(false);
-        // Remove CPAGrip container
-        const container = document.getElementById('cpagrip-locker-container');
+        // Remove BitLabs container
+        const container = document.getElementById('bitlabs-survey-container');
         if (container) {
           document.body.removeChild(container);
         }
         onComplete();
       };
 
+      // Start BitLabs integration
+      initializeBitLabs();
+
       // Cleanup function
       return () => {
-        console.log('ContentLocker: Cleaning up scripts');
+        console.log('ContentLocker: Cleaning up BitLabs');
         try {
-          // Clean up iframe if it exists
-          const iframe = document.querySelector('#cpagrip-locker-container iframe');
-          if (iframe) {
-            iframe.remove();
-          }
-          
-          // Clean up scripts if they exist
-          const scripts = document.querySelectorAll('script[src*="epctrk.com"]');
-          scripts.forEach(script => {
-            if (script.parentNode) {
-              script.parentNode.removeChild(script);
-          }
-          });
-          
-          const container = document.getElementById('cpagrip-locker-container');
+          const container = document.getElementById('bitlabs-survey-container');
           if (container) {
             document.body.removeChild(container);
           }
@@ -230,12 +148,11 @@ export default function ContentLocker({ isVisible, onComplete }: ContentLockerPr
           console.log('ContentLocker: Error during cleanup:', e);
         }
         delete (window as any).completeContentLocker;
-        delete (window as any).cpagripComplete;
         delete (window as any).hideLoadingOverlay;
         delete (window as any).showFallbackLocker;
       };
     }
-  }, [isVisible]);
+  }, [isVisible, onComplete]);
 
   // Handle fallback completion
   const handleFallbackComplete = () => {
@@ -261,7 +178,7 @@ export default function ContentLocker({ isVisible, onComplete }: ContentLockerPr
         bottom: 0,
         background: `rgba(0, 0, 0, ${contentLockerConfig.ui.overlayOpacity})`,
         borderRadius: contentLockerConfig.ui.borderRadius,
-        zIndex: 9998, // Lower than CPAGrip container
+        zIndex: 9998,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center'
@@ -281,8 +198,8 @@ export default function ContentLocker({ isVisible, onComplete }: ContentLockerPr
         {isLoading && (
           <div>
             <div style={{ fontSize: '24px', marginBottom: '20px' }}>⏳</div>
-            <h3>Loading Content Locker...</h3>
-            <p>Please wait while we prepare the content locker.</p>
+            <h3>Loading BitLabs Survey...</h3>
+            <p>Please wait while we prepare the survey.</p>
           </div>
         )}
         
@@ -291,7 +208,7 @@ export default function ContentLocker({ isVisible, onComplete }: ContentLockerPr
             <div style={{ fontSize: '48px', marginBottom: '20px' }}>🔒</div>
             <h3>Content Locker</h3>
             <p>Please complete the survey to continue watching.</p>
-            <p>This is a fallback since CPAGrip didn't load properly.</p>
+            <p>This is a fallback since BitLabs didn't load properly.</p>
             <button 
               onClick={handleFallbackComplete}
               style={{
@@ -312,7 +229,6 @@ export default function ContentLocker({ isVisible, onComplete }: ContentLockerPr
         
         <noscript>
           <p>Please enable JavaScript to access this page.</p>
-          <meta httpEquiv="refresh" content="0;url=https://epctrk.com/help/enable_javascript.php?lkt=2" />
         </noscript>
       </div>
     </div>

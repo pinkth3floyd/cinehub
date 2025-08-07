@@ -73,6 +73,12 @@ export default function MovieVideoPlayer({ videoUrl, poster, title, hasServers, 
 
   // Handle video time updates for locker trigger
   const handleTimeUpdate = () => {
+    console.log('MovieVideoPlayer: handleTimeUpdate called');
+    console.log('MovieVideoPlayer: lockerTriggered =', lockerTriggered);
+    console.log('MovieVideoPlayer: lockerEnabled =', lockerEnabled);
+    console.log('MovieVideoPlayer: duration =', duration);
+    console.log('MovieVideoPlayer: hasUserStartedPlaying =', hasUserStartedPlaying);
+    
     if (lockerTriggered || !lockerEnabled || !duration || !hasUserStartedPlaying) {
       if (lockerTriggered) console.log('MovieVideoPlayer: Locker already triggered, skipping');
       if (!lockerEnabled) console.log('MovieVideoPlayer: Locker not enabled');
