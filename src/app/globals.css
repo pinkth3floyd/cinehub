@@ -1025,6 +1025,25 @@ a {
 /* Movie Detail Page Styles */
 .movie-detail-content {
   margin-bottom: 40px;
+  margin-top: 40px;
+}
+
+/* Add top spacing to content area */
+.content {
+  padding-top: 40px;
+}
+
+/* Responsive top padding for content */
+@media (min-width: 768px) {
+  .content {
+    padding-top: 60px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .content {
+    padding-top: 80px;
+  }
 }
 
 /* Video Player Section */
@@ -1034,6 +1053,16 @@ a {
 
 /* YouTube Embed Styles */
 .youtube-embed {
+  aspect-ratio: 16/9;
+  width: 100%;
+  height: auto;
+  min-height: 400px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* External Video Host Embed Styles */
+.external-embed {
   aspect-ratio: 16/9;
   width: 100%;
   height: auto;

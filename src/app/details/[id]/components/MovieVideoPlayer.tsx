@@ -20,8 +20,17 @@ export default function MovieVideoPlayer({ videoUrl, poster, title, hasServers }
   const videoRef = useRef<HTMLVideoElement>(null);
   const playerRef = useRef<any>(null);
   
-  // Synchronously detect YouTube URLs
-  const isYouTube = videoUrl ? (videoUrl.includes('youtube.com/embed') || videoUrl.includes('youtu.be')) : false;
+  // Detect different types of video URLs
+  const isYouTube = videoUrl ? (videoUrl.includes('youtube.com/embed') || videoUrl.includes('youtu.be') || videoUrl.includes('youtube.com/watch')) : false;
+  const isExternalVideoHost = videoUrl ? (
+    videoUrl.includes('vidsrc.xyz') || 
+    videoUrl.includes('vidsrc.to') ||
+    videoUrl.includes('vidsrc.me') ||
+    videoUrl.includes('vidsrc.net') ||
+    videoUrl.includes('vidsrc.com') ||
+    videoUrl.includes('embed') ||
+    videoUrl.includes('player')
+  ) : false;
   
   // Convert to embed URL if needed
   const youtubeEmbedUrl = (() => {
@@ -37,10 +46,14 @@ export default function MovieVideoPlayer({ videoUrl, poster, title, hasServers }
     return videoUrl; // Already an embed URL
   })();
 
+  // Determine if we should use iframe for external video hosts
+  const shouldUseIframe = isYouTube || isExternalVideoHost;
+  const iframeUrl = isYouTube ? youtubeEmbedUrl : (isExternalVideoHost ? videoUrl : '');
+
   useEffect(() => {
     // Initialize Plyr player when component mounts
     if (typeof window !== 'undefined' && window.Plyr) {
-      if (videoRef.current && !isYouTube) {
+      if (videoRef.current && !shouldUseIframe) {
         playerRef.current = new window.Plyr(videoRef.current, {
           controls: [
             'play-large',
@@ -70,11 +83,11 @@ export default function MovieVideoPlayer({ videoUrl, poster, title, hasServers }
         playerRef.current.destroy();
       }
     };
-  }, [isYouTube]);
+  }, [shouldUseIframe]);
 
   // Update video source when videoUrl changes
   useEffect(() => {
-    if (videoUrl && videoRef.current && !isYouTube) {
+    if (videoUrl && videoRef.current && !shouldUseIframe) {
       // Update the video element source directly
       const videoElement = videoRef.current;
       videoElement.src = videoUrl;
@@ -98,7 +111,7 @@ export default function MovieVideoPlayer({ videoUrl, poster, title, hasServers }
         }
       }
     }
-  }, [videoUrl, isYouTube]);
+  }, [videoUrl, shouldUseIframe]);
 
   if (!hasServers) {
     return (
@@ -119,17 +132,17 @@ export default function MovieVideoPlayer({ videoUrl, poster, title, hasServers }
     );
   }
 
-  if (isYouTube && youtubeEmbedUrl) {
+  if (shouldUseIframe && iframeUrl) {
     return (
-      <div className="movie-player-section">
+      <div className="movie-player-section" >
         <div className="video-player-container">
           <iframe
-            src={youtubeEmbedUrl}
+            src={iframeUrl}
             title={title}
             frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
-            className="video-player youtube-embed"
+            className="video-player external-embed"
             style={{
               width: '100%',
               height: '100%',
