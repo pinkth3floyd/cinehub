@@ -13,16 +13,20 @@ interface MovieDetailContentProps {
 }
 
 export default function MovieDetailContent({ movie, reviews }: MovieDetailContentProps) {
-  const [selectedServer, setSelectedServer] = useState<any>(null);
-  const [videoUrl, setVideoUrl] = useState<string>('');
+  // Initialize with the first server if available
+  const initialServer = movie.servers && movie.servers.length > 0 ? movie.servers[0] : null;
+  const initialVideoUrl = initialServer ? initialServer.url : '';
+  
+  const [selectedServer, setSelectedServer] = useState<any>(initialServer);
+  const [videoUrl, setVideoUrl] = useState<string>(initialVideoUrl);
 
-  // Set default server when component mounts
+  // Update when movie.servers changes (in case it loads asynchronously)
   useEffect(() => {
-    if (movie.servers && movie.servers.length > 0) {
+    if (movie.servers && movie.servers.length > 0 && !selectedServer) {
       setSelectedServer(movie.servers[0]);
       setVideoUrl(movie.servers[0].url);
     }
-  }, [movie.servers]);
+  }, [movie.servers, selectedServer]);
 
   const handleServerSelect = (server: any) => {
     setSelectedServer(server);
