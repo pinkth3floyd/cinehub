@@ -2,12 +2,12 @@
 export const contentLockerConfig = {
   // CPAGrip settings
   cpagrip: {
-    scriptId: '1741216', // Your CPAGrip script ID
+    scriptId: '1741219', // Your CPAGrip script ID
     scriptUrl: 'https://epctrk.com/script_include.php',
     helpUrl: 'https://epctrk.com/help/ablk.php?lkt=2',
     noscriptUrl: 'https://epctrk.com/help/enable_javascript.php?lkt=2',
     // Alternative script IDs to try if the main one doesn't work
-    alternativeIds: ['1741216', '1741217', '1741218']
+    alternativeIds: ['1741219']
   },
   
   // Trigger settings
