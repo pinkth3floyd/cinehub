@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import ContentLocker from './ContentLocker';
+import { shouldShowLocker, getTriggerTime } from '../../../core/config/contentLocker';
 
 // Plyr type declaration
 declare global {
@@ -14,11 +16,18 @@ interface MovieVideoPlayerProps {
   poster?: string | null;
   title: string;
   hasServers: boolean;
+  duration?: number; // Movie duration in seconds
 }
 
-export default function MovieVideoPlayer({ videoUrl, poster, title, hasServers }: MovieVideoPlayerProps) {
+export default function MovieVideoPlayer({ videoUrl, poster, title, hasServers, duration }: MovieVideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const playerRef = useRef<any>(null);
+  const [showLocker, setShowLocker] = useState(false);
+  const [lockerTriggered, setLockerTriggered] = useState(false);
+  const [hasUserStartedPlaying, setHasUserStartedPlaying] = useState(false);
+  
+  console.log('MovieVideoPlayer: Received duration =', duration);
+  console.log('MovieVideoPlayer: videoUrl =', videoUrl);
   
   // Detect different types of video URLs
   const isYouTube = videoUrl ? (videoUrl.includes('youtube.com/embed') || videoUrl.includes('youtu.be') || videoUrl.includes('youtube.com/watch')) : false;
@@ -49,6 +58,55 @@ export default function MovieVideoPlayer({ videoUrl, poster, title, hasServers }
   // Determine if we should use iframe for external video hosts
   const shouldUseIframe = isYouTube || isExternalVideoHost;
   const iframeUrl = isYouTube ? youtubeEmbedUrl : (isExternalVideoHost ? videoUrl : '');
+
+  // Check if locker should be enabled for this video
+  const lockerEnabled = shouldShowLocker(duration, shouldUseIframe);
+  
+  console.log('MovieVideoPlayer: lockerEnabled =', lockerEnabled);
+  console.log('MovieVideoPlayer: shouldUseIframe =', shouldUseIframe);
+
+  // Handle play event to track when user starts playing
+  const handlePlay = () => {
+    console.log('MovieVideoPlayer: User started playing video');
+    setHasUserStartedPlaying(true);
+  };
+
+  // Handle video time updates for locker trigger
+  const handleTimeUpdate = () => {
+    if (lockerTriggered || !lockerEnabled || !duration || !hasUserStartedPlaying) {
+      if (lockerTriggered) console.log('MovieVideoPlayer: Locker already triggered, skipping');
+      if (!lockerEnabled) console.log('MovieVideoPlayer: Locker not enabled');
+      if (!duration) console.log('MovieVideoPlayer: No duration available');
+      if (!hasUserStartedPlaying) console.log('MovieVideoPlayer: User has not started playing yet');
+      return;
+    }
+    
+    const video = videoRef.current;
+    if (!video) return;
+    
+    const currentTime = video.currentTime;
+    const triggerTime = getTriggerTime(duration);
+    
+    console.log(`MovieVideoPlayer: Current time: ${currentTime}s, Trigger time: ${triggerTime}s, Duration: ${duration}s`);
+    
+    // Add a small delay to ensure user has actually started playing
+    if (currentTime >= triggerTime && !lockerTriggered && currentTime > 0.1) {
+      console.log('MovieVideoPlayer: Triggering content locker!');
+      setLockerTriggered(true);
+      setShowLocker(true);
+      video.pause(); // Pause video when locker appears
+    }
+  };
+
+  // Handle locker completion
+  const handleLockerComplete = () => {
+    console.log('MovieVideoPlayer: Locker completed, resuming video');
+    setShowLocker(false);
+    // Resume video playback
+    if (videoRef.current && !shouldUseIframe) {
+      videoRef.current.play();
+    }
+  };
 
   useEffect(() => {
     // Initialize Plyr player when component mounts
@@ -112,6 +170,13 @@ export default function MovieVideoPlayer({ videoUrl, poster, title, hasServers }
       }
     }
   }, [videoUrl, shouldUseIframe]);
+
+  // Reset locker state when video URL changes
+  useEffect(() => {
+    setLockerTriggered(false);
+    setShowLocker(false);
+    setHasUserStartedPlaying(false);
+  }, [videoUrl]);
 
   if (!hasServers) {
     return (
@@ -186,10 +251,18 @@ export default function MovieVideoPlayer({ videoUrl, poster, title, hasServers }
           controls
           className="video-player"
           key={videoUrl} // Force re-render when URL changes
+          onTimeUpdate={handleTimeUpdate}
+          onPlay={handlePlay}
         >
           <source src={videoUrl} type="video/mp4" />
           Your browser does not support the video tag.
         </video>
+        
+        {/* Content Locker Overlay */}
+        <ContentLocker 
+          isVisible={showLocker}
+          onComplete={handleLockerComplete}
+        />
       </div>
     </div>
   );

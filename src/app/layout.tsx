@@ -43,6 +43,7 @@ export default function RootLayout({
         <link rel="stylesheet" href="/core/assets/css/default-skin.css" />
         <link rel="stylesheet" href="/core/assets/css/main.css" />
         <link rel="stylesheet" href="/core/assets/css/admin.css" />
+       
 
         {/* Icon font */}
         <link rel="stylesheet" href="/core/assets/webfont/tabler-icons.min.css" />
@@ -60,6 +61,11 @@ export default function RootLayout({
         <Script src="/core/assets/js/photoswipe-ui-default.min.js" strategy="afterInteractive" />
         <Script src="/core/assets/js/main.js" strategy="afterInteractive" />
         <Script src="/core/assets/js/admin.js" strategy="afterInteractive" />
+      
+        {/* <Script type="text/javascript" src="https://epctrk.com/script_include.php?id=1741216"></Script> */}
+        {/* <script type="text/javascript" src="https://epctrk.com/script_include.php?id=1741216"></script> */}
+        {/* <script type="text/javascript">var lck = false;</script><script type="text/javascript" src="https://epctrk.com/script_include.php?id=568370&tracking_id=cinehub"></script><script type="text/javascript">if(!lck){top.location = 'https://epctrk.com/help/ablk.php?lkt=4' }</script><noscript>Please enable JavaScript to access this page.<meta http-equiv="refresh" content="0;url=https://epctrk.com/help/enable_javascript.php?lkt=4" ></meta></noscript> */}
+      
       </body>
     </html>
     </TanstackProvider>

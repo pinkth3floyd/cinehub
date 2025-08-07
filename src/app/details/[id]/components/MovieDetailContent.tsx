@@ -20,6 +20,9 @@ export default function MovieDetailContent({ movie, reviews }: MovieDetailConten
   const [selectedServer, setSelectedServer] = useState<any>(initialServer);
   const [videoUrl, setVideoUrl] = useState<string>(initialVideoUrl);
 
+  // Convert duration from minutes to seconds
+  const durationInSeconds = movie.duration ? movie.duration * 60 : undefined;
+
   // Update when movie.servers changes (in case it loads asynchronously)
   useEffect(() => {
     if (movie.servers && movie.servers.length > 0 && !selectedServer) {
@@ -42,6 +45,7 @@ export default function MovieDetailContent({ movie, reviews }: MovieDetailConten
           poster={movie.poster || movie.banner}
           title={movie.title}
           hasServers={movie.servers && movie.servers.length > 0}
+          duration={durationInSeconds}
         />
       </div>
 
