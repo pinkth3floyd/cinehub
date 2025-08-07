@@ -26,6 +26,30 @@ export const movies = sqliteTable('movies', {
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
 });
 
+// Movie servers table schema
+export const movieServers = sqliteTable('movie_servers', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  movieId: text('movie_id').notNull(),
+  name: text('name').notNull(),
+  url: text('url').notNull(),
+  quality: text('quality'),
+  language: text('language'),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
+});
+
+// Movie links table schema
+export const movieLinks = sqliteTable('movie_links', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  movieId: text('movie_id').notNull(),
+  title: text('title').notNull(),
+  url: text('url').notNull(),
+  type: text('type'), // download, stream, trailer, etc.
+  quality: text('quality'),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
+});
+
 // Zod schemas for validation
 export const createMovieSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title must be less than 200 characters'),
@@ -37,20 +61,35 @@ export const createMovieSchema = z.object({
   trailer: z.string().url('Invalid trailer URL').optional(),
   duration: z.number().min(1, 'Duration must be at least 1 minute').optional(),
   rating: z.number().min(0).max(10).default(0),
-  releaseDate: z.union([z.date(), z.string()]).transform((val) => {
-    if (typeof val === 'string' && val !== '') {
+  releaseDate: z.union([z.date(), z.string(), z.null()]).transform((val) => {
+    if (val === null || val === '') {
+      return undefined;
+    }
+    if (typeof val === 'string') {
       return new Date(val);
     }
-    return undefined;
+    return val;
   }).optional(),
   status: z.enum(['draft', 'published', 'archived']).default('draft'),
   featured: z.boolean().default(false),
   typeId: z.string().min(1, 'Type is required'),
   yearId: z.string().optional(),
   genreId: z.string().optional(),
-  server: z.string().optional(),
-  link: z.string().url('Invalid link URL').optional(),
+  server: z.string().optional().nullable(),
+  link: z.string().url('Invalid link URL').optional().nullable(),
   tagIds: z.array(z.string()).optional(),
+  servers: z.array(z.object({
+    name: z.string().min(1, 'Server name is required'),
+    url: z.string().url('Invalid server URL'),
+    quality: z.string().optional(),
+    language: z.string().optional(),
+  })).optional(),
+  links: z.array(z.object({
+    title: z.string().min(1, 'Link title is required'),
+    url: z.string().url('Invalid link URL'),
+    type: z.string().optional(),
+    quality: z.string().optional(),
+  })).optional(),
 });
 
 export const updateMovieSchema = z.object({
@@ -63,20 +102,35 @@ export const updateMovieSchema = z.object({
   trailer: z.string().url('Invalid trailer URL').optional(),
   duration: z.number().min(1, 'Duration must be at least 1 minute').optional(),
   rating: z.number().min(0).max(10).optional(),
-  releaseDate: z.union([z.date(), z.string()]).transform((val) => {
-    if (typeof val === 'string' && val !== '') {
+  releaseDate: z.union([z.date(), z.string(), z.null()]).transform((val) => {
+    if (val === null || val === '') {
+      return undefined;
+    }
+    if (typeof val === 'string') {
       return new Date(val);
     }
-    return undefined;
+    return val;
   }).optional(),
   status: z.enum(['draft', 'published', 'archived']).optional(),
   featured: z.boolean().optional(),
   typeId: z.string().min(1, 'Type is required').optional(),
   yearId: z.string().optional(),
   genreId: z.string().optional(),
-  server: z.string().optional(),
-  link: z.string().url('Invalid link URL').optional(),
+  server: z.string().optional().nullable(),
+  link: z.string().url('Invalid link URL').optional().nullable(),
   tagIds: z.array(z.string()).optional(),
+  servers: z.array(z.object({
+    name: z.string().min(1, 'Server name is required'),
+    url: z.string().url('Invalid server URL'),
+    quality: z.string().optional(),
+    language: z.string().optional(),
+  })).optional(),
+  links: z.array(z.object({
+    title: z.string().min(1, 'Link title is required'),
+    url: z.string().url('Invalid link URL'),
+    type: z.string().optional(),
+    quality: z.string().optional(),
+  })).optional(),
 });
 
 export const movieFilterSchema = z.object({
@@ -93,6 +147,10 @@ export const movieFilterSchema = z.object({
 // TypeScript types
 export type Movie = typeof movies.$inferSelect;
 export type NewMovie = typeof movies.$inferInsert;
+export type MovieServer = typeof movieServers.$inferSelect;
+export type NewMovieServer = typeof movieServers.$inferInsert;
+export type MovieLink = typeof movieLinks.$inferSelect;
+export type NewMovieLink = typeof movieLinks.$inferInsert;
 export type CreateMovieInput = z.infer<typeof createMovieSchema>;
 export type UpdateMovieInput = z.infer<typeof updateMovieSchema>;
 export type MovieFilterInput = z.infer<typeof movieFilterSchema>;

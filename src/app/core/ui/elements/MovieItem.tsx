@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
+import SafeImage from './SafeImage';
 
 export interface MovieItemProps {
   id: string;
@@ -26,11 +26,12 @@ export default function MovieItem({ id, title, cover, rating, categories, varian
   return (
     <div className={itemClass}>
       <div className="item__cover">
-        <Image 
-          src={`/core/assets/img/covers/${cover}`} 
+        <SafeImage 
+          src={cover}
           alt={title}
           width={300}
           height={450}
+          className="item__cover-img"
         />
         <Link href={`/details/${id}`} className="item__play">
           <i className="ti ti-player-play-filled"></i>

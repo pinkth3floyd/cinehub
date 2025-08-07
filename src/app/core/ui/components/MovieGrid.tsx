@@ -48,7 +48,7 @@ export default function MovieGrid({
 
   return (
     <div className={gridClass}>
-      <div className="row">
+      <div className="row g-4">
         {movies.map((movie) => (
           <div key={movie.id} className={getColumnClass()}>
             <MovieItem

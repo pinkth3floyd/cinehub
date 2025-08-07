@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 
+// Load environment variables
+import { config } from 'dotenv';
+config();
+
 import { movies } from '../src/app/core/entities/movies/schema';
 import { movieGenres, movieTags } from '../src/app/core/entities/movies/relationships';
 import { genres } from '../src/app/core/entities/genre/schema';
@@ -19,27 +23,53 @@ async function getDb() {
   return db;
 }
 
-// IMDb API configuration
-const IMDB_API_BASE = 'https://imdb-api.com/API';
-const IMDB_API_KEY = process.env.IMDB_API_KEY;
+// New IMDb API configuration
+const IMDB_API_BASE = 'https://imdb236.p.rapidapi.com/api/imdb';
+const IMDB_API_KEY = '296ea745dcmsh1f50d7b8afe8724p1e2901jsne0234d9676b4'; // Your provided key
 
-// Movie data interface
-interface IMDBMovie {
+// New API response interface based on the provided response
+interface IMDBMovieResult {
   id: string;
-  title: string;
-  year: string;
-  plot: string;
-  poster: string;
-  runtimeStr: string;
-  rating: string;
-  genres: string;
-  directorList: Array<{ id: string; name: string }>;
-  starList: Array<{ id: string; name: string }>;
-  contentRating: string;
-  imDbRating: string;
-  imDbRatingVotes: string;
-  metacriticRating: string;
-  trailer: string;
+  url: string;
+  primaryTitle: string;
+  originalTitle: string;
+  type: string;
+  description: string | null;
+  primaryImage: string | null;
+  thumbnails: Array<{
+    url: string;
+    width: number;
+    height: number;
+  }>;
+  trailer: string | null;
+  contentRating: string | null;
+  isAdult: boolean;
+  releaseDate: string | null;
+  startYear: number | null;
+  endYear: number | null;
+  runtimeMinutes: number | null;
+  genres: string[];
+  interests: string[];
+  countriesOfOrigin: string[];
+  externalLinks: string[] | null;
+  spokenLanguages: string[] | null;
+  filmingLocations: string[] | null;
+  productionCompanies: Array<{
+    id: string;
+    name: string;
+  }>;
+  budget: number | null;
+  grossWorldwide: number | null;
+  averageRating: number | null;
+  numVotes: number | null;
+  metascore: number | null;
+}
+
+interface IMDBSearchResponse {
+  rows: number;
+  numFound: number;
+  results: IMDBMovieResult[];
+  nextCursorMark?: string;
 }
 
 interface ImportOptions {
@@ -50,6 +80,8 @@ interface ImportOptions {
   genre?: string;
   featured?: boolean;
   status?: 'draft' | 'published' | 'archived';
+  sortOrder?: 'ASC' | 'DESC';
+  sortField?: string;
 }
 
 // Utility functions
@@ -62,65 +94,61 @@ function generateSlug(title: string): string {
     .trim();
 }
 
-function parseDuration(durationStr: string): number | null {
-  const match = durationStr.match(/(\d+)\s*min/);
-  return match ? parseInt(match[1]) : null;
+function parseRating(rating: number | null): number {
+  if (rating === null || rating === undefined) return 0;
+  return Math.min(Math.max(rating, 0), 10);
 }
 
-function parseRating(ratingStr: string): number {
-  const rating = parseFloat(ratingStr);
-  return isNaN(rating) ? 0 : Math.min(Math.max(rating, 0), 10);
-}
-
-async function searchIMDBMovies(searchTerm: string, limit: number = 10): Promise<IMDBMovie[]> {
-  if (!IMDB_API_KEY) {
-    throw new Error('IMDB_API_KEY environment variable is required');
+function parseReleaseDate(dateStr: string | null, year: number | null): Date | undefined {
+  if (dateStr) {
+    const date = new Date(dateStr);
+    if (!isNaN(date.getTime())) {
+      return date;
+    }
   }
-
-  const searchUrl = `${IMDB_API_BASE}/SearchMovie/${IMDB_API_KEY}/${encodeURIComponent(searchTerm)}`;
-  console.log(`🔍 Searching IMDb for: "${searchTerm}"`);
   
-  const response = await fetch(searchUrl);
+  if (year) {
+    return new Date(`${year}-01-01`);
+  }
+  
+  return undefined;
+}
+
+async function searchIMDBMovies(options: {
+  genre?: string;
+  rows?: number;
+  sortOrder?: 'ASC' | 'DESC';
+  sortField?: string;
+} = {}): Promise<IMDBMovieResult[]> {
+  const {
+    genre = 'Drama',
+    rows = 25,
+    sortOrder = 'ASC',
+    sortField = 'id'
+  } = options;
+
+  const searchUrl = `${IMDB_API_BASE}/search?type=movie&genre=${encodeURIComponent(genre)}&rows=${rows}&sortOrder=${sortOrder}&sortField=${sortField}`;
+  
+  console.log(`🔍 Searching IMDb for movies with genre: "${genre}"`);
+  console.log(`📊 Requesting ${rows} movies, sorted by ${sortField} ${sortOrder}`);
+  
+  const response = await fetch(searchUrl, {
+    method: 'GET',
+    headers: {
+      'x-rapidapi-host': 'imdb236.p.rapidapi.com',
+      'x-rapidapi-key': IMDB_API_KEY,
+    },
+  });
+
   if (!response.ok) {
     throw new Error(`IMDb API error: ${response.status} ${response.statusText}`);
   }
 
-  const searchData = await response.json();
+  const searchData: IMDBSearchResponse = await response.json();
   
-  if (searchData.errorMessage) {
-    throw new Error(`IMDb API error: ${searchData.errorMessage}`);
-  }
-
-  const results = searchData.results || [];
-  console.log(`📊 Found ${results.length} movies`);
-
-  // Get detailed info for each movie
-  const detailedMovies: IMDBMovie[] = [];
+  console.log(`📊 Found ${searchData.results.length} movies out of ${searchData.numFound} total`);
   
-  for (let i = 0; i < Math.min(results.length, limit); i++) {
-    const movie = results[i];
-    console.log(`📖 Fetching details for: ${movie.title} (${movie.description})`);
-    
-    try {
-      const detailUrl = `${IMDB_API_BASE}/Title/${IMDB_API_KEY}/${movie.id}`;
-      const detailResponse = await fetch(detailUrl);
-      
-      if (detailResponse.ok) {
-        const detailData = await detailResponse.json();
-        
-        if (!detailData.errorMessage) {
-          detailedMovies.push(detailData);
-        }
-      }
-      
-      // Rate limiting - be nice to the API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    } catch (error) {
-      console.warn(`⚠️ Failed to fetch details for ${movie.title}:`, error);
-    }
-  }
-
-  return detailedMovies;
+  return searchData.results;
 }
 
 async function ensureType(name: string): Promise<string> {
@@ -142,8 +170,7 @@ async function ensureType(name: string): Promise<string> {
   return newType.id;
 }
 
-async function ensureYear(yearStr: string): Promise<string | null> {
-  const year = parseInt(yearStr);
+async function ensureYear(year: number): Promise<string | null> {
   if (isNaN(year) || year < 1900 || year > new Date().getFullYear() + 1) {
     return null;
   }
@@ -189,19 +216,35 @@ async function ensureTags(tagNames: string[]): Promise<string[]> {
   const tagIds: string[] = [];
   
   for (const tagName of tagNames) {
+    if (!tagName.trim()) continue;
+    
     const existingTag = await database.select().from(tags).where(eq(tags.name, tagName)).limit(1);
     
     if (existingTag.length > 0) {
       tagIds.push(existingTag[0].id);
     } else {
-      const slug = generateSlug(tagName);
+      // Generate a unique slug by adding a suffix if needed
+      let slug = generateSlug(tagName);
+      let counter = 1;
+      let originalSlug = slug;
+      
+      // Check if slug already exists and make it unique
+      while (true) {
+        const existingSlug = await database.select().from(tags).where(eq(tags.slug, slug)).limit(1);
+        if (existingSlug.length === 0) {
+          break;
+        }
+        slug = `${originalSlug}-${counter}`;
+        counter++;
+      }
+      
       const [newTag] = await database.insert(tags).values({
         id: createId(),
         name: tagName,
         slug,
       }).returning();
       
-      console.log(`✅ Created tag: ${tagName}`);
+      console.log(`✅ Created tag: ${tagName} (slug: ${slug})`);
       tagIds.push(newTag.id);
     }
   }
@@ -209,45 +252,46 @@ async function ensureTags(tagNames: string[]): Promise<string[]> {
   return tagIds;
 }
 
-async function importMovie(movieData: IMDBMovie, options: ImportOptions): Promise<void> {
+async function importMovie(movieData: IMDBMovieResult, options: ImportOptions): Promise<void> {
   const database = await getDb();
-  const slug = generateSlug(movieData.title);
+  const slug = generateSlug(movieData.primaryTitle);
   
   // Check if movie already exists
   const existingMovie = await database.select().from(movies).where(eq(movies.slug, slug)).limit(1);
   if (existingMovie.length > 0) {
-    console.log(`⏭️ Skipping existing movie: ${movieData.title}`);
+    console.log(`⏭️ Skipping existing movie: ${movieData.primaryTitle}`);
     return;
   }
 
   // Ensure required entities exist
   const typeId = await ensureType('Movie'); // Default to 'Movie' type
-  const yearId = await ensureYear(movieData.year);
+  const yearId = movieData.startYear ? await ensureYear(movieData.startYear) : null;
   
   // Parse genres and create them
-  const genreNames = movieData.genres.split(', ').filter(Boolean);
-  const genreId = genreNames.length > 0 ? await ensureGenre(genreNames[0]) : null;
+  const genreId = movieData.genres.length > 0 ? await ensureGenre(movieData.genres[0]) : null;
   
-  // Create tags from directors and stars
+  // Create tags from production companies and countries
   const tagNames = [
-    ...movieData.directorList.map(d => d.name),
-    ...movieData.starList.slice(0, 3).map(s => s.name) // Limit to top 3 stars
-  ];
+    ...movieData.productionCompanies.map(company => company.name),
+    ...movieData.countriesOfOrigin,
+    ...(movieData.spokenLanguages || [])
+  ].filter(Boolean);
+  
   const tagIds = await ensureTags(tagNames);
 
   // Prepare movie data
   const movieInsertData = {
     id: createId(),
-    title: movieData.title,
+    title: movieData.primaryTitle,
     slug,
-    description: movieData.plot || undefined,
-    content: movieData.plot || undefined,
-    poster: movieData.poster || undefined,
-    banner: movieData.poster || undefined, // Use poster as banner if no banner
+    description: movieData.description || undefined,
+    content: movieData.description || undefined,
+    poster: movieData.primaryImage || undefined,
+    banner: movieData.primaryImage || undefined, // Use primary image as banner if no banner
     trailer: movieData.trailer || undefined,
-    duration: parseDuration(movieData.runtimeStr) || undefined,
-    rating: parseRating(movieData.imDbRating),
-    releaseDate: movieData.year ? new Date(`${movieData.year}-01-01`) : undefined,
+    duration: movieData.runtimeMinutes || undefined,
+    rating: parseRating(movieData.averageRating),
+    releaseDate: parseReleaseDate(movieData.releaseDate, movieData.startYear),
     status: options.status || 'published',
     featured: options.featured || false,
     typeId,
@@ -259,7 +303,7 @@ async function importMovie(movieData: IMDBMovie, options: ImportOptions): Promis
 
   // Insert movie
   const [movie] = await database.insert(movies).values(movieInsertData).returning();
-  console.log(`✅ Imported movie: ${movieData.title}`);
+  console.log(`✅ Imported movie: ${movieData.primaryTitle} (${movieData.startYear})`);
 
   // Create movie-tag relationships
   if (tagIds.length > 0) {
@@ -286,21 +330,25 @@ async function importMovie(movieData: IMDBMovie, options: ImportOptions): Promis
 
 async function importMovies(options: ImportOptions = {}): Promise<void> {
   const {
-    limit = 10,
-    searchTerm = 'popular movies 2024',
-    year,
-    type = 'Movie',
-    genre,
+    limit = 25,
+    genre = 'Drama',
+    sortOrder = 'ASC',
+    sortField = 'id',
     featured = false,
     status = 'published'
   } = options;
 
   console.log('🎬 Starting movie import from IMDb...');
-  console.log(`📋 Options:`, { limit, searchTerm, year, type, genre, featured, status });
+  console.log(`📋 Options:`, { limit, genre, sortOrder, sortField, featured, status });
 
   try {
     // Search for movies
-    const imdbMovies = await searchIMDBMovies(searchTerm, limit);
+    const imdbMovies = await searchIMDBMovies({
+      genre,
+      rows: limit,
+      sortOrder,
+      sortField
+    });
     
     if (imdbMovies.length === 0) {
       console.log('❌ No movies found');
@@ -315,10 +363,10 @@ async function importMovies(options: ImportOptions = {}): Promise<void> {
 
     for (const movieData of imdbMovies) {
       try {
-        await importMovie(movieData, { year, type, genre, featured, status });
+        await importMovie(movieData, { genre, featured, status });
         importedCount++;
       } catch (error) {
-        console.error(`❌ Failed to import ${movieData.title}:`, error);
+        console.error(`❌ Failed to import ${movieData.primaryTitle}:`, error);
         errorCount++;
       }
     }
@@ -338,47 +386,32 @@ async function importMovies(options: ImportOptions = {}): Promise<void> {
 // CLI interface
 async function main() {
   const command = process.argv[2];
-  const searchTerm = process.argv[3] || 'popular movies 2024';
-  const limit = parseInt(process.argv[4]) || 10;
+  const genre = process.argv[3] || 'Drama';
+  const limit = parseInt(process.argv[4]) || 25;
 
   switch (command) {
     case 'import':
-      if (!IMDB_API_KEY) {
-        console.error('❌ IMDB_API_KEY environment variable is required');
-        console.log('💡 Get your API key from: https://imdb-api.com/APIKey');
-        process.exit(1);
-      }
       await importMovies({
         limit,
-        searchTerm,
+        genre,
         status: 'published',
         featured: false
       });
       break;
       
     case 'import-featured':
-      if (!IMDB_API_KEY) {
-        console.error('❌ IMDB_API_KEY environment variable is required');
-        console.log('💡 Get your API key from: https://imdb-api.com/APIKey');
-        process.exit(1);
-      }
       await importMovies({
         limit,
-        searchTerm,
+        genre,
         status: 'published',
         featured: true
       });
       break;
       
     case 'import-draft':
-      if (!IMDB_API_KEY) {
-        console.error('❌ IMDB_API_KEY environment variable is required');
-        console.log('💡 Get your API key from: https://imdb-api.com/APIKey');
-        process.exit(1);
-      }
       await importMovies({
         limit,
-        searchTerm,
+        genre,
         status: 'draft',
         featured: false
       });
@@ -386,10 +419,10 @@ async function main() {
       
     case 'help':
       console.log(`
-🎬 Movie Importer Script
+🎬 Movie Importer Script (Updated for IMDb236 API)
 
 Usage:
-  tsx scripts/movie-importer.ts <command> [search-term] [limit]
+  tsx scripts/movie-importer.ts <command> [genre] [limit]
 
 Commands:
   import           Import movies as published
@@ -398,23 +431,26 @@ Commands:
   help             Show this help message
 
 Examples:
-  tsx scripts/movie-importer.ts import "action movies 2024" 5
-  tsx scripts/movie-importer.ts import-featured "comedy movies" 10
-  tsx scripts/movie-importer.ts import-draft "drama movies 2023" 3
+  tsx scripts/movie-importer.ts import "Action" 10
+  tsx scripts/movie-importer.ts import-featured "Comedy" 15
+  tsx scripts/movie-importer.ts import-draft "Drama" 5
 
-Environment Variables:
-  IMDB_API_KEY     Required: Your IMDb API key
-                   Get it from: https://imdb-api.com/APIKey
+Available Genres:
+  Action, Adventure, Animation, Biography, Comedy, Crime, 
+  Documentary, Drama, Family, Fantasy, Film-Noir, History, 
+  Horror, Music, Musical, Mystery, Romance, Sci-Fi, 
+  Sport, Thriller, War, Western
 
 Features:
+  ✅ Uses IMDb236 RapidAPI
   ✅ Automatic slug generation
   ✅ Duplicate detection
   ✅ Auto-create types, years, genres, tags
   ✅ Movie-tag relationships
   ✅ Movie-genre relationships
-  ✅ Rate limiting for API calls
   ✅ Progress tracking
   ✅ Error handling
+  ✅ Rich movie data (posters, trailers, ratings, etc.)
       `);
       break;
       

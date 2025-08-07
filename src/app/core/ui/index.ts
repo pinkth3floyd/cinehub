@@ -6,12 +6,16 @@ export { default as Card } from './elements/Card';
 export { default as Badge } from './elements/Badge';
 export { default as Modal } from './elements/Modal';
 export { default as Dropdown } from './elements/Dropdown';
+export { default as SafeImage } from './elements/SafeImage';
 
 // Components
 export { default as Header } from './components/Header';
 export { default as Footer } from './components/Footer';
 export { default as MovieItem } from './elements/MovieItem';
 export { default as HeroCarousel } from './components/HeroCarousel';
+export { default as HeroSection } from './components/HeroSection';
+export { default as HomeFilter } from './components/HomeFilter';
+export { default as MovieSection } from './components/MovieSection';
 export { default as ContentTabs } from './components/ContentTabs';
 export { default as PremiereSection } from './components/PremiereSection';
 export { default as PricingSection } from './components/PricingSection';

@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import AdminLayout from '../../../core/ui/components/AdminLayout';
-import MovieForm from '../../../core/ui/components/MovieForm';
-import { createMovie } from '../../../core/entities/movies/actions';
-import { getAllTypes } from '../../../core/entities/type/actions';
-import { getAllYears } from '../../../core/entities/year/actions';
-import { getAllGenres } from '../../../core/entities/genre/actions';
-import { getAllTags } from '../../../core/entities/tags/actions';
+import { useParams } from 'next/navigation';
+import AdminLayout from '../../../../core/ui/components/AdminLayout';
+import MovieForm from '../../../../core/ui/components/MovieForm';
+import { getMovieById, updateMovie } from '../../../../core/entities/movies/actions';
+import { getAllTypes } from '../../../../core/entities/type/actions';
+import { getAllYears } from '../../../../core/entities/year/actions';
+import { getAllGenres } from '../../../../core/entities/genre/actions';
+import { getAllTags } from '../../../../core/entities/tags/actions';
 
 // Static fields that don't depend on external data
 const staticFields = [
@@ -106,7 +107,10 @@ const staticFields = [
   }
 ];
 
-const AddMoviePage = () => {
+const EditMoviePage = () => {
+  const params = useParams();
+  const movieId = params.id as string;
+  const [movie, setMovie] = useState<any>(null);
   const [types, setTypes] = useState<any[]>([]);
   const [years, setYears] = useState<any[]>([]);
   const [genres, setGenres] = useState<any[]>([]);
@@ -114,47 +118,56 @@ const AddMoviePage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadOptions = async () => {
-      try {
-        const [typesResult, yearsResult, genresResult, tagsResult] = await Promise.all([
-          getAllTypes(),
-          getAllYears(),
-          getAllGenres(),
-          getAllTags()
-        ]);
+    const loadData = async () => {
+      if (movieId) {
+        try {
+          const [movieResult, typesResult, yearsResult, genresResult, tagsResult] = await Promise.all([
+            getMovieById(movieId),
+            getAllTypes(),
+            getAllYears(),
+            getAllGenres(),
+            getAllTags()
+          ]);
 
-        if (typesResult.success && typesResult.data) {
-          setTypes(typesResult.data);
-        } else {
-          console.error('Failed to load types:', typesResult.error);
-        }
+          if (movieResult.success && movieResult.data) {
+            setMovie(movieResult.data);
+          } else {
+            console.error('Failed to load movie:', movieResult.error);
+          }
 
-        if (yearsResult.success && yearsResult.data) {
-          setYears(yearsResult.data);
-        } else {
-          console.error('Failed to load years:', yearsResult.error);
-        }
+          if (typesResult.success && typesResult.data) {
+            setTypes(typesResult.data);
+          } else {
+            console.error('Failed to load types:', typesResult.error);
+          }
 
-        if (genresResult.success && genresResult.data) {
-          setGenres(genresResult.data);
-        } else {
-          console.error('Failed to load genres:', genresResult.error);
-        }
+          if (yearsResult.success && yearsResult.data) {
+            setYears(yearsResult.data);
+          } else {
+            console.error('Failed to load years:', yearsResult.error);
+          }
 
-        if (tagsResult.success && tagsResult.data) {
-          setTags(tagsResult.data);
-        } else {
-          console.error('Failed to load tags:', tagsResult.error);
+          if (genresResult.success && genresResult.data) {
+            setGenres(genresResult.data);
+          } else {
+            console.error('Failed to load genres:', genresResult.error);
+          }
+
+          if (tagsResult.success && tagsResult.data) {
+            setTags(tagsResult.data);
+          } else {
+            console.error('Failed to load tags:', tagsResult.error);
+          }
+        } catch (error) {
+          console.error('Error loading data:', error);
+        } finally {
+          setLoading(false);
         }
-      } catch (error) {
-        console.error('Error loading options:', error);
-      } finally {
-        setLoading(false);
       }
     };
 
-    loadOptions();
-  }, []);
+    loadData();
+  }, [movieId]);
 
   // Memoize the dynamic fields that depend on external data
   const dynamicFields = useMemo(() => [
@@ -194,10 +207,10 @@ const AddMoviePage = () => {
 
   const handleSubmit = async (data: any) => {
     try {
-      const result = await createMovie(data);
+      const result = await updateMovie(movieId, data);
       return result;
     } catch {
-      return { success: false, error: 'Failed to create movie' };
+      return { success: false, error: 'Failed to update movie' };
     }
   };
 
@@ -217,11 +230,26 @@ const AddMoviePage = () => {
     );
   }
 
+  if (!movie) {
+    return (
+      <AdminLayout>
+        <div className="row">
+          <div className="col-12">
+            <div className="alert alert-danger" role="alert">
+              Movie not found
+            </div>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
+
   return (
     <AdminLayout>
       <MovieForm
-        title="Add New Movie"
+        title="Edit Movie"
         fields={fields}
+        initialData={movie}
         onSubmit={handleSubmit}
         successRedirect="/admin/catalog"
       />
@@ -229,4 +257,4 @@ const AddMoviePage = () => {
   );
 };
 
-export default AddMoviePage; 
+export default EditMoviePage; 

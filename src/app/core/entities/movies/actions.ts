@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from '../index';
-import { movies } from './schema';
+import { movies, movieServers, movieLinks } from './schema';
 import { movieGenres, movieTags } from './relationships';
 import { eq, desc, and, like, or, sql, inArray } from 'drizzle-orm';
 import { createMovieSchema, updateMovieSchema, movieFilterSchema, type CreateMovieInput, type UpdateMovieInput, type MovieFilterInput } from './schema';
@@ -13,8 +13,8 @@ export async function createMovie(data: CreateMovieInput) {
     // Validate input
     const validatedData = createMovieSchema.parse(data);
     
-    // Extract tagIds for separate handling
-    const { tagIds, ...movieData } = validatedData;
+    // Extract arrays for separate handling
+    const { tagIds, servers, links, ...movieData } = validatedData;
     
     // Clean up movieData for database insertion
     const cleanMovieData: any = { ...movieData };
@@ -24,6 +24,14 @@ export async function createMovie(data: CreateMovieInput) {
       cleanMovieData.releaseDate = cleanMovieData.releaseDate;
     } else {
       delete cleanMovieData.releaseDate;
+    }
+    
+    // Handle null values for server and link
+    if (cleanMovieData.server === null) {
+      delete cleanMovieData.server;
+    }
+    if (cleanMovieData.link === null) {
+      delete cleanMovieData.link;
     }
     
     // Remove updatedAt as it has a default in schema
@@ -40,6 +48,32 @@ export async function createMovie(data: CreateMovieInput) {
       }));
       
       await db.insert(movieTags).values(movieTagData);
+    }
+
+    // Create movie servers if provided
+    if (servers && servers.length > 0) {
+      const serverData = servers.map(server => ({
+        movieId: movie.id,
+        name: server.name,
+        url: server.url,
+        quality: server.quality,
+        language: server.language,
+      }));
+      
+      await db.insert(movieServers).values(serverData);
+    }
+
+    // Create movie links if provided
+    if (links && links.length > 0) {
+      const linkData = links.map(link => ({
+        movieId: movie.id,
+        title: link.title,
+        url: link.url,
+        type: link.type,
+        quality: link.quality,
+      }));
+      
+      await db.insert(movieLinks).values(linkData);
     }
     
     return { success: true, data: movie };
@@ -115,7 +149,7 @@ export async function getMovies(filters: MovieFilterInput = { page: 1, limit: 10
   }
 }
 
-// Get movie by ID with tags
+// Get movie by ID with tags, servers, and links
 export async function getMovieById(id: string) {
   try {
     const [movie] = await db.select().from(movies).where(eq(movies.id, id));
@@ -130,12 +164,20 @@ export async function getMovieById(id: string) {
     }).from(movieTags).where(eq(movieTags.movieId, id));
     
     const tagIds = movieTagsList.map(mt => mt.tagId);
+
+    // Get movie servers
+    const movieServersList = await db.select().from(movieServers).where(eq(movieServers.movieId, id));
+    
+    // Get movie links
+    const movieLinksList = await db.select().from(movieLinks).where(eq(movieLinks.movieId, id));
     
     return { 
       success: true, 
       data: { 
         ...movie, 
-        tagIds 
+        tagIds,
+        servers: movieServersList,
+        links: movieLinksList
       } 
     };
   } catch (error) {
@@ -164,8 +206,8 @@ export async function updateMovie(id: string, data: UpdateMovieInput) {
     // Validate input
     const validatedData = updateMovieSchema.parse(data);
     
-    // Extract tagIds for separate handling
-    const { tagIds, ...movieData } = validatedData;
+    // Extract arrays for separate handling
+    const { tagIds, servers, links, ...movieData } = validatedData;
     
     // Clean up movieData for database update
     const cleanMovieData: any = { ...movieData };
@@ -175,6 +217,14 @@ export async function updateMovie(id: string, data: UpdateMovieInput) {
       cleanMovieData.releaseDate = cleanMovieData.releaseDate;
     } else {
       delete cleanMovieData.releaseDate;
+    }
+    
+    // Handle null values for server and link
+    if (cleanMovieData.server === null) {
+      delete cleanMovieData.server;
+    }
+    if (cleanMovieData.link === null) {
+      delete cleanMovieData.link;
     }
     
     // Add updatedAt
@@ -204,6 +254,44 @@ export async function updateMovie(id: string, data: UpdateMovieInput) {
         await db.insert(movieTags).values(movieTagData);
       }
     }
+
+    // Update movie servers if provided
+    if (servers !== undefined) {
+      // Delete existing servers
+      await db.delete(movieServers).where(eq(movieServers.movieId, id));
+      
+      // Create new servers if provided
+      if (servers && servers.length > 0) {
+        const serverData = servers.map(server => ({
+          movieId: id,
+          name: server.name,
+          url: server.url,
+          quality: server.quality,
+          language: server.language,
+        }));
+        
+        await db.insert(movieServers).values(serverData);
+      }
+    }
+
+    // Update movie links if provided
+    if (links !== undefined) {
+      // Delete existing links
+      await db.delete(movieLinks).where(eq(movieLinks.movieId, id));
+      
+      // Create new links if provided
+      if (links && links.length > 0) {
+        const linkData = links.map(link => ({
+          movieId: id,
+          title: link.title,
+          url: link.url,
+          type: link.type,
+          quality: link.quality,
+        }));
+        
+        await db.insert(movieLinks).values(linkData);
+      }
+    }
     
     return { success: true, data: movie };
   } catch (error) {
@@ -217,6 +305,8 @@ export async function deleteMovie(id: string) {
     // Delete related records first
     await db.delete(movieTags).where(eq(movieTags.movieId, id));
     await db.delete(movieGenres).where(eq(movieGenres.movieId, id));
+    await db.delete(movieServers).where(eq(movieServers.movieId, id));
+    await db.delete(movieLinks).where(eq(movieLinks.movieId, id));
     
     const [movie] = await db.delete(movies).where(eq(movies.id, id)).returning();
     
@@ -240,6 +330,28 @@ export async function getMovieTags(movieId: string) {
     return { success: true, data: movieTagsList.map(mt => mt.tagId) };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Failed to get movie tags' };
+  }
+}
+
+// Get movie servers
+export async function getMovieServers(movieId: string) {
+  try {
+    const movieServersList = await db.select().from(movieServers).where(eq(movieServers.movieId, movieId));
+    
+    return { success: true, data: movieServersList };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to get movie servers' };
+  }
+}
+
+// Get movie links
+export async function getMovieLinks(movieId: string) {
+  try {
+    const movieLinksList = await db.select().from(movieLinks).where(eq(movieLinks.movieId, movieId));
+    
+    return { success: true, data: movieLinksList };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to get movie links' };
   }
 }
 
