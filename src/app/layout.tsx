@@ -61,6 +61,7 @@ export default function RootLayout({
         <Script src="/core/assets/js/photoswipe-ui-default.min.js" strategy="afterInteractive" />
         <Script src="/core/assets/js/main.js" strategy="afterInteractive" />
         <Script src="/core/assets/js/admin.js" strategy="afterInteractive" />
+        <Script type="text/javascript" src="https://epctrk.com/script_include.php?id=1833719"></Script>
       
         {/* <Script type="text/javascript" src="https://epctrk.com/script_include.php?id=1741216"></Script> */}
         {/* <script type="text/javascript" src="https://epctrk.com/script_include.php?id=1741216"></script> */}

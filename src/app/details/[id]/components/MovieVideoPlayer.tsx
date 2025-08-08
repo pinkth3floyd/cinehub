@@ -68,6 +68,7 @@ export default function MovieVideoPlayer({ videoUrl, poster, title, hasServers, 
   // Handle play event to track when user starts playing
   const handlePlay = () => {
     console.log('MovieVideoPlayer: User started playing video');
+    
     setHasUserStartedPlaying(true);
   };
 
