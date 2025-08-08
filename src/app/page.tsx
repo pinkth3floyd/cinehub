@@ -2,7 +2,8 @@ import {
   Header,
   Footer,
   HeroSection,
-  HomeFilter,
+  FilterBar,
+  MovieGrid,
   MovieSection
 } from './core/ui';
 import { 
@@ -10,13 +11,15 @@ import {
   getLatestMovies, 
   getTopRatedMovies 
 } from './core/entities/movies/actions';
+import { getSiteInfo } from './core/utils/siteSettings';
 
 export default async function Home() {
   // Fetch movies for different sections
-  const [featuredResult, latestResult, topRatedResult] = await Promise.all([
+  const [featuredResult, latestResult, topRatedResult, siteInfo] = await Promise.all([
     getFeaturedMovies(6),
     getLatestMovies(12),
-    getTopRatedMovies(12)
+    getTopRatedMovies(12),
+    getSiteInfo()
   ]);
 
   const featuredMovies = featuredResult.success ? featuredResult.data || [] : [];
@@ -27,47 +30,60 @@ export default async function Home() {
     <>
       <Header />
       
-      {/* Hero Section with Featured Movies */}
-      <HeroSection movies={featuredMovies} />
+      {/* Hero Section with Carousel */}
+      <section className="hero-section">
+        <HeroSection movies={featuredMovies} />
+      </section>
       
-      {/* Filter Section */}
-      <HomeFilter 
-        filters={[
-          {
-            name: 'genre',
-            label: 'Genre',
-            options: [
-              { value: 'action', label: 'Action' },
-              { value: 'comedy', label: 'Comedy' },
-              { value: 'drama', label: 'Drama' },
-              { value: 'horror', label: 'Horror' },
-              { value: 'romance', label: 'Romance' },
-              { value: 'thriller', label: 'Thriller' }
-            ]
-          },
-          {
-            name: 'year',
-            label: 'Year',
-            options: [
-              { value: '2024', label: '2024' },
-              { value: '2023', label: '2023' },
-              { value: '2022', label: '2022' },
-              { value: '2021', label: '2021' },
-              { value: '2020', label: '2020' }
-            ]
-          },
-          {
-            name: 'rating',
-            label: 'Rating',
-            options: [
-              { value: '9+', label: '9+ Stars' },
-              { value: '8+', label: '8+ Stars' },
-              { value: '7+', label: '7+ Stars' },
-              { value: '6+', label: '6+ Stars' }
-            ]
-          }
-        ]}
-      />
+      {/* Filter Bar */}
+      <FilterBar />
+      
+      {/* Movie Grid Section */}
+      <MovieGrid />
+      
+      {/* Recently Updated Section */}
+      <section className="recently-updated">
+        <div className="container">
+          <div className="section-header">
+            <h2 className="section-title">
+              <i className="ti ti-clock"></i>
+              Recently Updated
+            </h2>
+            <a href="/catalog" className="view-all-btn">
+              View All
+              <i className="ti ti-arrow-right"></i>
+            </a>
+          </div>
+          
+          <div className="movies-grid">
+            {latestMovies.map((movie) => (
+              <div key={movie.id} className="movie-card">
+                <div className="movie-poster">
+                  <img 
+                    src={movie.poster || '/core/assets/img/covers/cover.jpg'} 
+                    alt={movie.title}
+                    loading="lazy"
+                  />
+                  <div className="movie-badge">HD</div>
+                  <div className="movie-overlay">
+                    <button className="play-btn">
+                      <i className="ti ti-player-play"></i>
+                    </button>
+                  </div>
+                </div>
+                <div className="movie-info">
+                  <h3 className="movie-title">{movie.title}</h3>
+                  <div className="movie-meta">
+                    <span className="episode">Ep {Math.floor(Math.random() * 20) + 1}</span>
+                    <span className="quality">HD</span>
+                    <span className="language">SUB</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
       
       {/* Latest Releases Section */}
       <MovieSection
@@ -87,7 +103,7 @@ export default async function Home() {
         variant="default"
       />
       
-      {/* Recommended Section - Using a mix of featured and top rated */}
+      {/* Recommended Section */}
       <MovieSection
         title="Recommended for You"
         subtitle="Personalized recommendations based on your preferences"
@@ -96,7 +112,7 @@ export default async function Home() {
         variant="default"
       />
       
-      {/* Trending Section - Using latest movies with high ratings */}
+      {/* Trending Section */}
       <MovieSection
         title="Trending Now"
         subtitle="Movies that are gaining popularity"
