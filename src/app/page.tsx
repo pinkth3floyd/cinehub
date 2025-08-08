@@ -38,9 +38,6 @@ export default async function Home() {
       {/* Filter Bar */}
       <FilterBar />
       
-      {/* Movie Grid Section */}
-      <MovieGrid />
-      
       {/* Recently Updated Section */}
       <section className="recently-updated">
         <div className="container">

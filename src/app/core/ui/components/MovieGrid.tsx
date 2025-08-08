@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 
-interface Movie {
+export interface Movie {
   id: string;
   title: string;
   poster?: string | null;
@@ -11,10 +11,15 @@ interface Movie {
   genres?: string[];
 }
 
-interface MovieGridProps {
+export interface MovieGridProps {
   movies: Movie[];
   title?: string;
   subtitle?: string;
+  columns?: number;
+  variant?: string;
+  showLoadMore?: boolean;
+  onLoadMore?: () => void;
+  hasMore?: boolean;
 }
 
 // Sample movie data for demonstration
@@ -63,7 +68,16 @@ const sampleMovies = [
   }
 ];
 
-export default function MovieGrid({ movies = sampleMovies, title, subtitle }: MovieGridProps) {
+export default function MovieGrid({ 
+  movies = sampleMovies, 
+  title, 
+  subtitle,
+  columns = 6,
+  variant = 'default',
+  showLoadMore = false,
+  onLoadMore,
+  hasMore = false
+}: MovieGridProps) {
   const getRatingClass = (rating: number) => {
     if (rating >= 8.0) return 'green';
     if (rating >= 7.0) return 'yellow';
@@ -122,6 +136,17 @@ export default function MovieGrid({ movies = sampleMovies, title, subtitle }: Mo
                 </div>
               ))}
             </div>
+            
+            {showLoadMore && hasMore && onLoadMore && (
+              <div className="text-center mt-4">
+                <button 
+                  className="btn btn-primary"
+                  onClick={onLoadMore}
+                >
+                  Load More
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
