@@ -62,7 +62,7 @@ export const contentLockerConfig = {
   },
   // Trigger settings
   trigger: {
-    percentage: 50, // Percentage of video duration to trigger locker (10% = 10 seconds into a 100-second video)
+    percentage: 20, // Percentage of video duration to trigger locker (10% = 10 seconds into a 100-second video)
     enabled: true, // Enable/disable content locker
     onlyOnDirectVideos: false, // Only show locker on direct video files, not iframes
     skipIfNoDuration: false, // Skip locker if movie duration is not available
