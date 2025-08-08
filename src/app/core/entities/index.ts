@@ -1,5 +1,10 @@
 import { drizzle } from "drizzle-orm/libsql";
 import { createClient } from "@libsql/client";
+import { config } from 'dotenv';
+import { resolve } from 'path';
+
+// Load environment variables
+config({ path: resolve(process.cwd(), '.env') });
 
 // Import all schemas
 import { users } from "./user/schema";
@@ -12,10 +17,22 @@ import { years } from "./year/schema";
 import { tags } from "./tags/schema";
 import { systemSettings } from "./systemsettings/schema";
 
+// Validate environment variables
+const tursoUrl = process.env.TURSO_URL;
+const tursoToken = process.env.TURSO_TOKEN;
+
+if (!tursoUrl) {
+  throw new Error('TURSO_URL environment variable is required');
+}
+
+if (!tursoToken) {
+  throw new Error('TURSO_TOKEN environment variable is required');
+}
+
 // Create database connection for server-side use
 const client = createClient({
-  url: process.env.TURSO_URL!,
-  authToken: process.env.TURSO_TOKEN!,
+  url: tursoUrl,
+  authToken: tursoToken,
 });
 
 export const db = drizzle(client, {

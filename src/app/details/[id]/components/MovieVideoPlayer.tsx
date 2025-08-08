@@ -25,6 +25,9 @@ export default function MovieVideoPlayer({ videoUrl, poster, title, hasServers, 
   const [showLocker, setShowLocker] = useState(false);
   const [lockerTriggered, setLockerTriggered] = useState(false);
   const [hasUserStartedPlaying, setHasUserStartedPlaying] = useState(false);
+  const [lockerEnabled, setLockerEnabled] = useState(false);
+  const [triggerTime, setTriggerTime] = useState(0);
+  const [isLoadingSettings, setIsLoadingSettings] = useState(true);
   
   // Detect different types of video URLs
   const isYouTube = videoUrl ? (videoUrl.includes('youtube.com/embed') || videoUrl.includes('youtu.be') || videoUrl.includes('youtube.com/watch')) : false;
@@ -56,15 +59,35 @@ export default function MovieVideoPlayer({ videoUrl, poster, title, hasServers, 
   const shouldUseIframe = isYouTube || isExternalVideoHost;
   const iframeUrl = isYouTube ? youtubeEmbedUrl : (isExternalVideoHost ? videoUrl : '');
 
-  // Check if locker should be enabled for this video
-  const lockerEnabled = shouldShowLocker(duration, shouldUseIframe);
+  // Load locker settings
+  useEffect(() => {
+    const loadLockerSettings = async () => {
+      try {
+        setIsLoadingSettings(true);
+        const [enabled, trigger] = await Promise.all([
+          shouldShowLocker(duration, shouldUseIframe),
+          getTriggerTime(duration || 0)
+        ]);
+        setLockerEnabled(enabled);
+        setTriggerTime(trigger);
+      } catch (error) {
+        console.error('Failed to load locker settings:', error);
+        setLockerEnabled(false);
+        setTriggerTime(0);
+      } finally {
+        setIsLoadingSettings(false);
+      }
+    };
+
+    loadLockerSettings();
+  }, [duration, shouldUseIframe]);
 
   // Handle play event to track when user starts playing
   const handlePlay = () => {
     setHasUserStartedPlaying(true);
     
     // If trigger percentage is 0, trigger locker immediately on play
-    if (lockerEnabled && contentLockerConfig.trigger.percentage === 0) {
+    if (lockerEnabled && triggerTime === 0) {
       setLockerTriggered(true);
       setShowLocker(true);
       // Pause video after a small delay to ensure locker shows
@@ -78,7 +101,7 @@ export default function MovieVideoPlayer({ videoUrl, poster, title, hasServers, 
 
   // Handle video time updates for locker trigger
   const handleTimeUpdate = () => {
-    if (lockerTriggered || !lockerEnabled || !hasUserStartedPlaying) {
+    if (lockerTriggered || !lockerEnabled || !hasUserStartedPlaying || isLoadingSettings) {
       return;
     }
     
@@ -86,9 +109,8 @@ export default function MovieVideoPlayer({ videoUrl, poster, title, hasServers, 
     if (!video) return;
     
     const currentTime = video.currentTime;
-    const triggerTime = getTriggerTime(duration || 0);
     
-    // For immediate trigger (percentage = 0), trigger as soon as user starts playing
+    // For immediate trigger (triggerTime = 0), trigger as soon as user starts playing
     if (triggerTime === 0 && currentTime > 0.1) {
       setLockerTriggered(true);
       setShowLocker(true);

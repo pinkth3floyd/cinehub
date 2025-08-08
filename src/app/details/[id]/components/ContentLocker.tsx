@@ -10,10 +10,19 @@ interface ContentLockerProps {
 
 export default function ContentLocker({ isVisible, onComplete }: ContentLockerProps) {
   const [showDialog, setShowDialog] = useState(false);
+  const [iframeSrc, setIframeSrc] = useState<string>('');
 
   useEffect(() => {
     if (isVisible) {
       setShowDialog(true);
+      // Load the CPAGrip data URL
+      getCPAGripDataUrl().then(url => {
+        setIframeSrc(url);
+      }).catch(error => {
+        console.error('Failed to load CPAGrip URL:', error);
+        // Fallback to a default URL or show error
+        setIframeSrc('data:text/html;charset=utf-8,<html><body><h1>Content Locker</h1><p>Loading...</p></body></html>');
+      });
     } else {
       setShowDialog(false);
     }
@@ -78,19 +87,31 @@ export default function ContentLocker({ isVisible, onComplete }: ContentLockerPr
             height: 'calc(100% - 60px)', // Subtract header height
             position: 'relative'
           }}>
-            <iframe
-              src={getCPAGripDataUrl()}
-              style={{
-                width: '100%',
+            {iframeSrc ? (
+              <iframe
+                src={iframeSrc}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  border: 'none',
+                  borderRadius: '0 0 10px 10px'
+                }}
+                title="CPAGrip Content Locker"
+                allowFullScreen
+                sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation"
+                allow="fullscreen"
+              />
+            ) : (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 height: '100%',
-                border: 'none',
-                borderRadius: '0 0 10px 10px'
-              }}
-              title="CPAGrip Content Locker"
-              allowFullScreen
-              sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation"
-              allow="fullscreen"
-            />
+                color: '#666'
+              }}>
+                Loading content locker...
+              </div>
+            )}
           </div>
         </div>
       </div>

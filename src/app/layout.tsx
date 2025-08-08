@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import TanstackProvider from "./core/ui/components/TanstackProvider";
+import { getSiteMetadata } from "./core/utils/siteSettings";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,15 +15,49 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "CineHub – Online Movies, TV Shows & Cinema",
-  description: "Online Movies, TV Shows & Cinema HTML Template",
-  keywords: "movies, tv shows, cinema, streaming",
-  icons: {
-    icon: '/core/assets/icon/favicon-32x32.png',
-    apple: '/core/assets/icon/favicon-32x32.png',
-  },
-};
+// Generate metadata dynamically
+export async function generateMetadata(): Promise<Metadata> {
+  try {
+    const metadata = await getSiteMetadata();
+    
+    return {
+      title: metadata.title,
+      description: metadata.description,
+      keywords: metadata.keywords,
+      authors: metadata.author ? [{ name: metadata.author }] : undefined,
+      icons: {
+        icon: '/core/assets/icon/favicon-32x32.png',
+        apple: '/core/assets/icon/favicon-32x32.png',
+      },
+      openGraph: {
+        title: metadata.openGraph.title,
+        description: metadata.openGraph.description,
+        type: metadata.openGraph.type as 'website',
+        url: metadata.openGraph.url,
+        images: metadata.openGraph.image ? [{ url: metadata.openGraph.image }] : undefined,
+        siteName: metadata.openGraph.siteName,
+      },
+      twitter: {
+        card: metadata.twitter.card as 'summary_large_image' | 'summary' | 'player' | 'app',
+        title: metadata.twitter.title,
+        description: metadata.twitter.description,
+        images: metadata.twitter.image ? [metadata.twitter.image] : undefined,
+      },
+    };
+  } catch (error) {
+    console.error('Failed to generate metadata:', error);
+    // Fallback metadata
+    return {
+      title: "CineHub – Online Movies, TV Shows & Cinema",
+      description: "Online Movies, TV Shows & Cinema HTML Template",
+      keywords: "movies, tv shows, cinema, streaming",
+      icons: {
+        icon: '/core/assets/icon/favicon-32x32.png',
+        apple: '/core/assets/icon/favicon-32x32.png',
+      },
+    };
+  }
+}
 
 export default function RootLayout({
   children,
