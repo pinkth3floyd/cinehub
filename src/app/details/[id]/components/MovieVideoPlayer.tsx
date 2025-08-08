@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import ContentLocker from './ContentLocker';
-import { shouldShowLocker, getTriggerTime } from '../../../core/config/contentLocker';
+import { shouldShowLocker, getTriggerTime, contentLockerConfig } from '../../../core/config/contentLocker';
 
 // Plyr type declaration
 declare global {
@@ -25,9 +25,6 @@ export default function MovieVideoPlayer({ videoUrl, poster, title, hasServers, 
   const [showLocker, setShowLocker] = useState(false);
   const [lockerTriggered, setLockerTriggered] = useState(false);
   const [hasUserStartedPlaying, setHasUserStartedPlaying] = useState(false);
-  
-  console.log('MovieVideoPlayer: Received duration =', duration);
-  console.log('MovieVideoPlayer: videoUrl =', videoUrl);
   
   // Detect different types of video URLs
   const isYouTube = videoUrl ? (videoUrl.includes('youtube.com/embed') || videoUrl.includes('youtu.be') || videoUrl.includes('youtube.com/watch')) : false;
@@ -61,30 +58,27 @@ export default function MovieVideoPlayer({ videoUrl, poster, title, hasServers, 
 
   // Check if locker should be enabled for this video
   const lockerEnabled = shouldShowLocker(duration, shouldUseIframe);
-  
-  console.log('MovieVideoPlayer: lockerEnabled =', lockerEnabled);
-  console.log('MovieVideoPlayer: shouldUseIframe =', shouldUseIframe);
 
   // Handle play event to track when user starts playing
   const handlePlay = () => {
-    console.log('MovieVideoPlayer: User started playing video');
-    
     setHasUserStartedPlaying(true);
+    
+    // If trigger percentage is 0, trigger locker immediately on play
+    if (lockerEnabled && contentLockerConfig.trigger.percentage === 0) {
+      setLockerTriggered(true);
+      setShowLocker(true);
+      // Pause video after a small delay to ensure locker shows
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.pause();
+        }
+      }, 100);
+    }
   };
 
   // Handle video time updates for locker trigger
   const handleTimeUpdate = () => {
-    console.log('MovieVideoPlayer: handleTimeUpdate called');
-    console.log('MovieVideoPlayer: lockerTriggered =', lockerTriggered);
-    console.log('MovieVideoPlayer: lockerEnabled =', lockerEnabled);
-    console.log('MovieVideoPlayer: duration =', duration);
-    console.log('MovieVideoPlayer: hasUserStartedPlaying =', hasUserStartedPlaying);
-    
-    if (lockerTriggered || !lockerEnabled || !duration || !hasUserStartedPlaying) {
-      if (lockerTriggered) console.log('MovieVideoPlayer: Locker already triggered, skipping');
-      if (!lockerEnabled) console.log('MovieVideoPlayer: Locker not enabled');
-      if (!duration) console.log('MovieVideoPlayer: No duration available');
-      if (!hasUserStartedPlaying) console.log('MovieVideoPlayer: User has not started playing yet');
+    if (lockerTriggered || !lockerEnabled || !hasUserStartedPlaying) {
       return;
     }
     
@@ -92,13 +86,18 @@ export default function MovieVideoPlayer({ videoUrl, poster, title, hasServers, 
     if (!video) return;
     
     const currentTime = video.currentTime;
-    const triggerTime = getTriggerTime(duration);
+    const triggerTime = getTriggerTime(duration || 0);
     
-    console.log(`MovieVideoPlayer: Current time: ${currentTime}s, Trigger time: ${triggerTime}s, Duration: ${duration}s`);
+    // For immediate trigger (percentage = 0), trigger as soon as user starts playing
+    if (triggerTime === 0 && currentTime > 0.1) {
+      setLockerTriggered(true);
+      setShowLocker(true);
+      video.pause(); // Pause video when locker appears
+      return;
+    }
     
-    // Add a small delay to ensure user has actually started playing
-    if (currentTime >= triggerTime && !lockerTriggered && currentTime > 0.1) {
-      console.log('MovieVideoPlayer: Triggering content locker!');
+    // For percentage-based triggers, check if current time has reached trigger time
+    if (duration && currentTime >= triggerTime && !lockerTriggered && currentTime > 0.1) {
       setLockerTriggered(true);
       setShowLocker(true);
       video.pause(); // Pause video when locker appears
@@ -107,7 +106,6 @@ export default function MovieVideoPlayer({ videoUrl, poster, title, hasServers, 
 
   // Handle locker completion
   const handleLockerComplete = () => {
-    console.log('MovieVideoPlayer: Locker completed, resuming video');
     setShowLocker(false);
     // Resume video playback
     if (videoRef.current && !shouldUseIframe) {
@@ -139,6 +137,9 @@ export default function MovieVideoPlayer({ videoUrl, poster, title, hasServers, 
             options: [4320, 2880, 2160, 1440, 1080, 720, 576, 480, 360, 240]
           }
         });
+        
+        // Add Plyr event listeners for play
+        playerRef.current.on('play', handlePlay);
       }
     }
 
@@ -172,7 +173,7 @@ export default function MovieVideoPlayer({ videoUrl, poster, title, hasServers, 
             ]
           };
         } catch (error) {
-          console.log('Plyr source update failed, using direct video element:', error);
+          // Plyr source update failed, using direct video element
         }
       }
     }
@@ -207,7 +208,15 @@ export default function MovieVideoPlayer({ videoUrl, poster, title, hasServers, 
   if (shouldUseIframe && iframeUrl) {
     return (
       <div className="movie-player-section" >
-        <div className="video-player-container">
+        <div className="video-player-container" style={{
+          position: 'relative',
+          width: '100%',
+          height: '0',
+          paddingBottom: '56.25%', // 16:9 aspect ratio
+          overflow: 'hidden',
+          borderRadius: '12px',
+          backgroundColor: '#000'
+        }}>
           <iframe
             src={iframeUrl}
             title={title}
@@ -216,9 +225,11 @@ export default function MovieVideoPlayer({ videoUrl, poster, title, hasServers, 
             allowFullScreen
             className="video-player external-embed"
             style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
               width: '100%',
               height: '100%',
-              minHeight: '400px',
               border: 'none',
               borderRadius: '12px'
             }}
@@ -250,7 +261,15 @@ export default function MovieVideoPlayer({ videoUrl, poster, title, hasServers, 
 
   return (
     <div className="movie-player-section">
-      <div className="video-player-container">
+      <div className="video-player-container" style={{
+        position: 'relative',
+        width: '100%',
+        height: '0',
+        paddingBottom: '56.25%', // 16:9 aspect ratio
+        overflow: 'hidden',
+        borderRadius: '12px',
+        backgroundColor: '#000'
+      }}>
         <video
           ref={videoRef}
           poster={poster || undefined}
@@ -260,6 +279,15 @@ export default function MovieVideoPlayer({ videoUrl, poster, title, hasServers, 
           key={videoUrl} // Force re-render when URL changes
           onTimeUpdate={handleTimeUpdate}
           onPlay={handlePlay}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain', // Maintains aspect ratio without cropping
+            backgroundColor: '#000'
+          }}
         >
           <source src={videoUrl} type="video/mp4" />
           Your browser does not support the video tag.

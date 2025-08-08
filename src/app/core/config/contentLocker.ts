@@ -62,7 +62,7 @@ export const contentLockerConfig = {
   },
   // Trigger settings
   trigger: {
-    percentage: 0, // Percentage of video duration to trigger locker (10% = 10 seconds into a 100-second video)
+    percentage: 50, // Percentage of video duration to trigger locker (10% = 10 seconds into a 100-second video)
     enabled: true, // Enable/disable content locker
     onlyOnDirectVideos: false, // Only show locker on direct video files, not iframes
     skipIfNoDuration: false, // Skip locker if movie duration is not available
@@ -81,38 +81,28 @@ export const contentLockerConfig = {
 
 // Helper function to check if locker should be enabled
 export const shouldShowLocker = (duration?: number, isIframe: boolean = false) => {
-  console.log('shouldShowLocker: duration =', duration, 'isIframe =', isIframe);
-  console.log('shouldShowLocker: trigger.enabled =', contentLockerConfig.trigger.enabled);
-  console.log('shouldShowLocker: trigger.onlyOnDirectVideos =', contentLockerConfig.trigger.onlyOnDirectVideos);
-  console.log('shouldShowLocker: trigger.skipIfNoDuration =', contentLockerConfig.trigger.skipIfNoDuration);
-  console.log('shouldShowLocker: cpagrip.enabled =', contentLockerConfig.cpagrip.enabled);
-  
   if (!contentLockerConfig.trigger.enabled) {
-    console.log('shouldShowLocker: Locker disabled in config');
     return false;
   }
   
   if (!contentLockerConfig.cpagrip.enabled) {
-    console.log('shouldShowLocker: CPAGrip disabled in config');
     return false;
   }
   
   if (contentLockerConfig.trigger.onlyOnDirectVideos && isIframe) {
-    console.log('shouldShowLocker: Skipping iframe videos');
     return false;
   }
   
+  // Only check duration if skipIfNoDuration is true
   if (contentLockerConfig.trigger.skipIfNoDuration && !duration) {
-    console.log('shouldShowLocker: Skipping due to no duration');
     return false;
   }
   
-  if (duration && duration < contentLockerConfig.trigger.minDuration) {
-    console.log('shouldShowLocker: Video too short, duration =', duration);
+  // Only check minDuration if duration is available and skipIfNoDuration is true
+  if (contentLockerConfig.trigger.skipIfNoDuration && duration && duration < contentLockerConfig.trigger.minDuration) {
     return false;
   }
   
-  console.log('shouldShowLocker: Locker should be enabled');
   return true;
 };
 

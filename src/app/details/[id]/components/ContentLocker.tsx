@@ -12,10 +12,7 @@ export default function ContentLocker({ isVisible, onComplete }: ContentLockerPr
   const [showDialog, setShowDialog] = useState(false);
 
   useEffect(() => {
-    console.log('ContentLocker: isVisible changed to', isVisible);
-    
     if (isVisible) {
-      console.log('ContentLocker: Showing CPAGrip locker dialog');
       setShowDialog(true);
     } else {
       setShowDialog(false);
@@ -24,17 +21,14 @@ export default function ContentLocker({ isVisible, onComplete }: ContentLockerPr
 
   // Handle dialog completion (when user closes or completes the locker)
   const handleDialogComplete = () => {
-    console.log('ContentLocker: Dialog completed');
     setShowDialog(false);
     onComplete();
   };
 
   if (!isVisible) {
-    console.log('ContentLocker: Not visible, returning null');
     return null;
   }
 
-  console.log('ContentLocker: Rendering CPAGrip locker overlay');
   return (
     <>
       {/* Main overlay */}
@@ -96,9 +90,6 @@ export default function ContentLocker({ isVisible, onComplete }: ContentLockerPr
               allowFullScreen
               sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation"
               allow="fullscreen"
-              onLoad={() => {
-                console.log('ContentLocker: CPAGrip iframe loaded');
-              }}
             />
           </div>
         </div>
