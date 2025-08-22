@@ -95,13 +95,13 @@ export default async function Home() {
       </section>
       
       {/* Latest Releases Section */}
-      {/* <MovieSection
+      <MovieSection
         title="Latest Releases"
         subtitle="Discover the newest movies added to our collection"
         movies={latestMovies}
         columns={6}
         variant="default"
-      /> */}
+      />
       
       {/* Top Rated Section */}
       {/* <MovieSection
