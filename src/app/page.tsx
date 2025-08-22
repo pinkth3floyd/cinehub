@@ -36,7 +36,7 @@ export default async function Home() {
       
       {/* Hero Section with Carousel */}
       <section className="hero-section">
-        <HeroSection movies={featuredMovies} />
+        <HeroSection />
       </section>
       
       {/* Filter Bar */}

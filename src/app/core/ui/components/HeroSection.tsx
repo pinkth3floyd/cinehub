@@ -1,7 +1,9 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useQuery } from '@tanstack/react-query';
+import { getFeaturedMovies } from '../../entities/movies/actions';
 
 interface Movie {
   id: string;
@@ -15,55 +17,62 @@ interface Movie {
   genres?: string[];
 }
 
-interface HeroSectionProps {
-  movies: Movie[];
+interface HeroSlide {
+  id: string;
+  title: string;
+  rating: number;
+  ratingClass: string;
+  description: string;
+  categories: string[];
+  background: string;
 }
 
-export default function HeroSection({ movies }: HeroSectionProps) {
-  // Convert featured movies to hero slides
-  const heroSlides = movies.slice(0, 5).map((movie, index) => ({
-    id: movie.id,
-    title: movie.title,
-    rating: movie.rating || 0,
-    ratingClass: getRatingClass(movie.rating || 0),
-    description: getMovieDescription(movie.title), // Generate description based on title
-    categories: movie.genres || ['Action', 'Drama'],
-    background: movie.banner || movie.poster || `/core/assets/img/bg/slide__bg-${(index % 3) + 1}.jpg`
-  }));
+export default function HeroSection() {
+  const [slidesToShow, setSlidesToShow] = useState<HeroSlide[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Fallback slides if no movies are available
-  const fallbackSlides = [
-    {
-      id: 'fallback-1',
-      title: "Savage Beauty",
-      rating: 9.8,
-      ratingClass: "green",
-      description: "A brilliant scientist discovers a way to harness the power of the ocean's currents to create a new, renewable energy source. But when her groundbreaking technology falls into the wrong hands, she must race against time to stop it from being used for evil.",
-      categories: ["Action", "Drama", "Comedy"],
-      background: "/core/assets/img/bg/slide__bg-1.jpg"
+  // Fetch featured movies using TanStack Query
+  const { data: featuredMovies, isLoading: isFetching, error } = useQuery({
+    queryKey: ['featured-movies'],
+    queryFn: async () => {
+      const result = await getFeaturedMovies(5); // Get top 5 featured movies
+      if (result.success && result.data) {
+        return result.data;
+      }
+      throw new Error(result.error || 'Failed to fetch featured movies');
     },
-    {
-      id: 'fallback-2',
-      title: "From the Other Side",
-      rating: 6.9,
-      ratingClass: "yellow",
-      description: "In a world where magic is outlawed and hunted, a young witch must use her powers to fight back against the corrupt authorities who seek to destroy her kind.",
-      categories: ["Adventure", "Thriller"],
-      background: "/core/assets/img/bg/slide__bg-2.jpg"
-    },
-    {
-      id: 'fallback-3',
-      title: "Endless Horizon",
-      rating: 6.2,
-      ratingClass: "red",
-      description: "When a renowned archaeologist goes missing, his daughter sets out on a perilous journey to the heart of the Amazon rainforest to find him. Along the way, she discovers a hidden city and a dangerous conspiracy that threatens the very balance of power in the world.",
-      categories: ["Action", "Drama", "Thriller"],
-      background: "/core/assets/img/bg/slide__bg-3.jpg"
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
+  });
+
+  // Process movies into hero slides
+  useEffect(() => {
+    if (featuredMovies && featuredMovies.length > 0) {
+      const heroSlides = featuredMovies.map((movie, index) => ({
+        id: movie.id,
+        title: movie.title,
+        rating: movie.rating || 0,
+        ratingClass: getRatingClass(movie.rating || 0),
+        description: movie.description || generateMovieDescription(movie.title),
+        categories: ['Movie'], // We'll enhance this later with genre fetching
+        background: movie.banner || movie.poster || `/core/assets/img/bg/slide__bg-${(index % 3) + 1}.jpg`
+      }));
+      
+      setSlidesToShow(heroSlides);
+    } else if (!isFetching) {
+      // If no featured movies, show minimal fallback
+      setSlidesToShow([{
+        id: 'no-movies',
+        title: "Welcome to CineHub",
+        rating: 0,
+        ratingClass: "green",
+        description: "Discover amazing movies and TV shows. Browse our collection to find your next favorite entertainment.",
+        categories: ["Movies", "TV Shows"],
+        background: "/core/assets/img/bg/slide__bg-1.jpg"
+      }]);
     }
-  ];
-
-  // Use actual movies if available, otherwise use fallback
-  const slidesToShow = heroSlides.length > 0 ? heroSlides : fallbackSlides;
+    setIsLoading(false);
+  }, [featuredMovies, isFetching]);
 
   function getRatingClass(rating: number): string {
     if (rating >= 8.0) return 'green';
@@ -71,8 +80,7 @@ export default function HeroSection({ movies }: HeroSectionProps) {
     return 'red';
   }
 
-  function getMovieDescription(title: string): string {
-    // Generate a description based on the movie title
+  function generateMovieDescription(title: string): string {
     const descriptions = [
       "An epic journey that will take you to the edge of your seat with stunning visuals and heart-pounding action.",
       "A compelling story that explores the depths of human emotion and the complexities of relationships.",
@@ -83,9 +91,16 @@ export default function HeroSection({ movies }: HeroSectionProps) {
     return descriptions[Math.floor(Math.random() * descriptions.length)];
   }
 
+  // Initialize Splide carousel
   useEffect(() => {
-    // Initialize Splide carousel
-    if (typeof window !== 'undefined' && window.Splide) {
+    if (typeof window !== 'undefined' && window.Splide && slidesToShow.length > 0) {
+      // Destroy existing instance if any
+      const existingSplide = document.querySelector('#splide01') as any;
+      if (existingSplide && existingSplide.splide) {
+        existingSplide.splide.destroy();
+      }
+
+      // Initialize new instance
       const splide = new window.Splide('#splide01', {
         type: 'loop',
         perPage: 1,
@@ -105,8 +120,60 @@ export default function HeroSection({ movies }: HeroSectionProps) {
       });
       
       splide.mount();
+
+      // Cleanup function
+      return () => {
+        if (splide) {
+          splide.destroy();
+        }
+      };
     }
   }, [slidesToShow]);
+
+  // Loading state
+  if (isLoading || isFetching) {
+    return (
+      <div className="container">
+        <div className="row">
+          <div className="col-12">
+            <div className="hero-loading">
+              <div className="hero-loading__content">
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">Loading featured movies...</span>
+                </div>
+                <p className="mt-3">Loading featured movies...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="container">
+        <div className="row">
+          <div className="col-12">
+            <div className="hero-error">
+              <div className="hero-error__content">
+                <i className="ti ti-alert-triangle"></i>
+                <h3>Unable to Load Featured Movies</h3>
+                <p>Please try refreshing the page or check your connection.</p>
+                <button 
+                  className="btn btn-primary"
+                  onClick={() => window.location.reload()}
+                >
+                  Refresh Page
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container">
@@ -137,7 +204,9 @@ export default function HeroSection({ movies }: HeroSectionProps) {
                       <div className="hero__content">
                         <h2 className="hero__title">
                           {slide.title} 
-                          <sub className={slide.ratingClass}>{slide.rating.toFixed(1)}</sub>
+                          {slide.rating > 0 && (
+                            <sub className={slide.ratingClass}>{slide.rating.toFixed(1)}</sub>
+                          )}
                         </h2>
                         <p className="hero__text">{slide.description}</p>
                         <p className="hero__category">
@@ -148,9 +217,15 @@ export default function HeroSection({ movies }: HeroSectionProps) {
                           ))}
                         </p>
                         <div className="hero__actions">
-                          <Link href={`/details/${slide.id}`} className="hero__btn">
-                            <span>Watch now</span>
-                          </Link>
+                          {slide.id !== 'no-movies' ? (
+                            <Link href={`/details/${slide.id}`} className="hero__btn">
+                              <span>Watch now</span>
+                            </Link>
+                          ) : (
+                            <Link href="/catalog" className="hero__btn">
+                              <span>Browse Movies</span>
+                            </Link>
+                          )}
                         </div>
                       </div>
                     </div>
