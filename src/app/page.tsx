@@ -1,3 +1,4 @@
+
 import {
   Header,
   Footer,
@@ -12,8 +13,11 @@ import {
   getTopRatedMovies 
 } from './core/entities/movies/actions';
 import { getSiteInfo } from './core/utils/siteSettings';
+import Link from 'next/link';
+// import { useRouter } from 'next/navigation';
 
 export default async function Home() {
+  // const router = useRouter();
   // Fetch movies for different sections
   const [featuredResult, latestResult, topRatedResult, siteInfo] = await Promise.all([
     getFeaturedMovies(6),
@@ -54,7 +58,12 @@ export default async function Home() {
           
           <div className="movies-grid">
             {latestMovies.map((movie) => (
-              <div key={movie.id} className="movie-card">
+              <Link key={movie.id} className="movie-card"
+              href={`/details/${movie.id}`}
+              // onClick={() => {
+              //   router.push(`/details/${movie.id}`);
+              // }}
+              >
                 <div className="movie-poster">
                   <img 
                     src={movie.poster || '/core/assets/img/covers/cover.jpg'} 
@@ -63,9 +72,12 @@ export default async function Home() {
                   />
                   <div className="movie-badge">HD</div>
                   <div className="movie-overlay">
-                    <button className="play-btn">
+                    <Link className="play-btn"
+                    href={`/details/${movie.id}`}
+                    >
+                      {/* https://cinehub-red.vercel.app/details/jn8xe4b2gwu3q17fm72lk5t9 */}
                       <i className="ti ti-player-play"></i>
-                    </button>
+                    </Link>
                   </div>
                 </div>
                 <div className="movie-info">
@@ -76,7 +88,7 @@ export default async function Home() {
                     <span className="language">SUB</span>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
