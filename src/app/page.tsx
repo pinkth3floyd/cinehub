@@ -40,7 +40,7 @@ export default async function Home() {
       </section>
       
       {/* Filter Bar */}
-      <FilterBar />
+      {/* <FilterBar /> */}
       
       {/* Recently Updated Section */}
       <section className="recently-updated">

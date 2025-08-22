@@ -210,11 +210,14 @@ export default function HeroSection() {
                         </h2>
                         <p className="hero__text">{slide.description}</p>
                         <p className="hero__category">
-                          {slide.categories.map((category, catIndex) => (
+                          {/* {slide.categories.map((category, catIndex) => (
                             <Link key={catIndex} href={`/catalog?genre=${category.toLowerCase()}`}>
                               {category}
                             </Link>
-                          ))}
+                          ))} */}
+                          {
+                            
+                          }
                         </p>
                         <div className="hero__actions">
                           {slide.id !== 'no-movies' ? (
