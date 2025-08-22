@@ -72,12 +72,9 @@ export default async function Home() {
                   />
                   <div className="movie-badge">HD</div>
                   <div className="movie-overlay">
-                    <Link className="play-btn"
-                    href={`/details/${movie.id}`}
-                    >
-                      {/* https://cinehub-red.vercel.app/details/jn8xe4b2gwu3q17fm72lk5t9 */}
+                    <div className="play-btn">
                       <i className="ti ti-player-play"></i>
-                    </Link>
+                    </div>
                   </div>
                 </div>
                 <div className="movie-info">

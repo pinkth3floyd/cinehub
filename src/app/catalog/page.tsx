@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Header, Footer, MovieGrid, Section } from '../core/ui';
 import { getMovies } from '../core/entities/movies/actions';
-import { getAllTypes, getAllYears, getAllGenres } from '../core/entities/index';
+import { getAllTypes, getAllYears, getAllGenres } from '../core/entities/client';
 import { useQuery } from '@tanstack/react-query';
 import { debounce } from 'lodash';
 

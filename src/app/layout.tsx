@@ -65,8 +65,6 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <TanstackProvider>
-      {/* <UseAnalytics /> */}
     <html lang="en">
       <head>
         {/* CSS */}
@@ -84,7 +82,9 @@ export default function RootLayout({
         <link rel="stylesheet" href="/core/assets/webfont/tabler-icons.min.css" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        {children}
+        <TanstackProvider>
+          {children}
+        </TanstackProvider>
         
         {/* JS */}
         <Script src="/core/assets/js/bootstrap.bundle.min.js" strategy="afterInteractive" />
@@ -117,6 +117,5 @@ export default function RootLayout({
       
       </body>
     </html>
-    </TanstackProvider>
   );
 }
