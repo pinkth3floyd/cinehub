@@ -98,6 +98,19 @@ export default function RootLayout({
         <Script src="/core/assets/js/admin.js" strategy="afterInteractive" />
         <Script type="text/javascript" src="https://epctrk.com/script_include.php?id=1833719"></Script>
       
+        {/* <Script async src="https://www.googletagmanager.com/gtag/js?id=G-WBQWZPRWCL"></Script> */}
+
+   
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WBQWZPRWCL"></script>
+<Script id="gtag-init" strategy="afterInteractive">
+  {`
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){window.dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-WBQWZPRWCL');
+  `}
+</Script>
+
         {/* <Script type="text/javascript" src="https://epctrk.com/script_include.php?id=1741216"></Script> */}
         {/* <script type="text/javascript" src="https://epctrk.com/script_include.php?id=1741216"></script> */}
         {/* <script type="text/javascript">var lck = false;</script><script type="text/javascript" src="https://epctrk.com/script_include.php?id=568370&tracking_id=cinehub"></script><script type="text/javascript">if(!lck){top.location = 'https://epctrk.com/help/ablk.php?lkt=4' }</script><noscript>Please enable JavaScript to access this page.<meta http-equiv="refresh" content="0;url=https://epctrk.com/help/enable_javascript.php?lkt=4" ></meta></noscript> */}
