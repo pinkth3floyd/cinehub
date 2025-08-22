@@ -58,6 +58,7 @@ export async function createMovie(data: CreateMovieInput) {
         url: server.url,
         quality: server.quality,
         language: server.language,
+        videoType: server.videoType || 'mp4',
       }));
       
       await db.insert(movieServers).values(serverData);
@@ -268,6 +269,7 @@ export async function updateMovie(id: string, data: UpdateMovieInput) {
           url: server.url,
           quality: server.quality,
           language: server.language,
+          videoType: server.videoType || 'mp4',
         }));
         
         await db.insert(movieServers).values(serverData);

@@ -34,6 +34,7 @@ export const movieServers = sqliteTable('movie_servers', {
   url: text('url').notNull(),
   quality: text('quality'),
   language: text('language'),
+  videoType: text('video_type', { enum: ['mp4', 'iframe', 'youtube'] }).notNull().default('mp4'),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
 });
@@ -83,6 +84,7 @@ export const createMovieSchema = z.object({
     url: z.string().url('Invalid server URL'),
     quality: z.string().optional(),
     language: z.string().optional(),
+    videoType: z.enum(['mp4', 'iframe', 'youtube']).default('mp4'),
   })).optional(),
   links: z.array(z.object({
     title: z.string().min(1, 'Link title is required'),
@@ -124,6 +126,7 @@ export const updateMovieSchema = z.object({
     url: z.string().url('Invalid server URL'),
     quality: z.string().optional(),
     language: z.string().optional(),
+    videoType: z.enum(['mp4', 'iframe', 'youtube']).default('mp4'),
   })).optional(),
   links: z.array(z.object({
     title: z.string().min(1, 'Link title is required'),

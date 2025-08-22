@@ -8,6 +8,7 @@ interface Server {
   url: string;
   quality?: string;
   language?: string;
+  videoType: 'mp4' | 'iframe' | 'youtube';
 }
 
 interface MovieServerSelectorProps {
@@ -47,6 +48,23 @@ export default function MovieServerSelector({ servers, selectedServer, onServerS
     );
   };
 
+  const getVideoTypeBadge = (videoType: string) => {
+    const typeMap: { [key: string]: { label: string; class: string; icon: string } } = {
+      'mp4': { label: 'MP4', class: 'badge--blue', icon: 'ti ti-video' },
+      'youtube': { label: 'YouTube', class: 'badge--red', icon: 'ti ti-brand-youtube' },
+      'iframe': { label: 'iFrame', class: 'badge--green', icon: 'ti ti-player-play' }
+    };
+
+    const typeInfo = typeMap[videoType] || { label: videoType.toUpperCase(), class: 'badge--default', icon: 'ti ti-question' };
+    
+    return (
+      <span className={`badge ${typeInfo.class}`} title={`Video Type: ${typeInfo.label}`}>
+        <i className={typeInfo.icon}></i>
+        {typeInfo.label}
+      </span>
+    );
+  };
+
   return (
     <div className="server-selector">
       <div className="server-selector__header">
@@ -73,6 +91,7 @@ export default function MovieServerSelector({ servers, selectedServer, onServerS
                   {server.name}
                 </span>
                 <div className="server-selector__item-badges">
+                  {getVideoTypeBadge(server.videoType)}
                   {getQualityBadge(server.quality)}
                   {getLanguageBadge(server.language)}
                 </div>
@@ -94,9 +113,12 @@ export default function MovieServerSelector({ servers, selectedServer, onServerS
           <div className="server-selector__current-info">
             <span className="server-selector__current-label">Currently playing:</span>
             <span className="server-selector__current-name">{selectedServer.name}</span>
-            {selectedServer.quality && (
-              <span className="server-selector__current-quality">{selectedServer.quality}</span>
-            )}
+            <div className="server-selector__current-badges">
+              {getVideoTypeBadge(selectedServer.videoType)}
+              {selectedServer.quality && (
+                <span className="server-selector__current-quality">{selectedServer.quality}</span>
+              )}
+            </div>
           </div>
         </div>
       )}

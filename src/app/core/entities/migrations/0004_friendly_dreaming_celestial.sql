@@ -1,0 +1,1 @@
+ALTER TABLE `movie_servers` ADD `video_type` text DEFAULT 'mp4' NOT NULL;

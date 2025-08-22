@@ -7,6 +7,15 @@ import MovieDescription from './MovieDescription';
 import MovieReviews from './MovieReviews';
 import MovieRecommended from './MovieRecommended';
 
+interface Server {
+  id: string;
+  name: string;
+  url: string;
+  quality?: string;
+  language?: string;
+  videoType: 'mp4' | 'iframe' | 'youtube';
+}
+
 interface MovieDetailContentProps {
   movie: any;
   reviews: any[];
@@ -15,10 +24,8 @@ interface MovieDetailContentProps {
 export default function MovieDetailContent({ movie, reviews }: MovieDetailContentProps) {
   // Initialize with the first server if available
   const initialServer = movie.servers && movie.servers.length > 0 ? movie.servers[0] : null;
-  const initialVideoUrl = initialServer ? initialServer.url : '';
   
-  const [selectedServer, setSelectedServer] = useState<any>(initialServer);
-  const [videoUrl, setVideoUrl] = useState<string>(initialVideoUrl);
+  const [selectedServer, setSelectedServer] = useState<Server | null>(initialServer);
 
   // Convert duration from minutes to seconds
   const durationInSeconds = movie.duration ? movie.duration * 60 : undefined;
@@ -27,13 +34,11 @@ export default function MovieDetailContent({ movie, reviews }: MovieDetailConten
   useEffect(() => {
     if (movie.servers && movie.servers.length > 0 && !selectedServer) {
       setSelectedServer(movie.servers[0]);
-      setVideoUrl(movie.servers[0].url);
     }
   }, [movie.servers, selectedServer]);
 
-  const handleServerSelect = (server: any) => {
+  const handleServerSelect = (server: Server) => {
     setSelectedServer(server);
-    setVideoUrl(server.url);
   };
 
   return (
@@ -41,7 +46,7 @@ export default function MovieDetailContent({ movie, reviews }: MovieDetailConten
       {/* Video Player Section */}
       <div className="movie-player-section">
         <MovieVideoPlayer 
-          videoUrl={videoUrl}
+          selectedServer={selectedServer}
           poster={movie.poster || movie.banner}
           title={movie.title}
           hasServers={movie.servers && movie.servers.length > 0}

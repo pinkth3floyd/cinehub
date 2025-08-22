@@ -19,13 +19,7 @@ interface Server {
   url: string;
   quality?: string;
   language?: string;
-}
-
-interface Link {
-  title: string;
-  url: string;
-  type?: string;
-  quality?: string;
+  videoType: 'mp4' | 'iframe' | 'youtube';
 }
 
 interface MovieFormProps {
@@ -52,7 +46,6 @@ const MovieForm: React.FC<MovieFormProps> = ({
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [servers, setServers] = useState<Server[]>([]);
-  const [links, setLinks] = useState<Link[]>([]);
 
   // Memoize the initial data to prevent unnecessary re-renders
   const memoizedInitialData = useMemo(() => initialData, [JSON.stringify(initialData)]);
@@ -61,12 +54,12 @@ const MovieForm: React.FC<MovieFormProps> = ({
     if (memoizedInitialData && typeof memoizedInitialData === 'object') {
       setFormData(memoizedInitialData);
       
-      // Initialize servers and links from initial data
+      // Initialize servers from initial data
       if (memoizedInitialData.servers && Array.isArray(memoizedInitialData.servers)) {
-        setServers(memoizedInitialData.servers as Server[]);
-      }
-      if (memoizedInitialData.links && Array.isArray(memoizedInitialData.links)) {
-        setLinks(memoizedInitialData.links as Link[]);
+        setServers(memoizedInitialData.servers.map((server: any) => ({
+          ...server,
+          videoType: server.videoType || 'mp4'
+        })));
       }
     }
   }, [memoizedInitialData]);
@@ -152,18 +145,13 @@ const MovieForm: React.FC<MovieFormProps> = ({
         }
       });
 
-      // Filter out empty servers and links before submission
+      // Filter out empty servers before submission
       const filteredServers = servers.filter(server => 
         server.name.trim() !== '' && server.url.trim() !== ''
       );
-      
-      const filteredLinks = links.filter(link => 
-        link.title.trim() !== '' && link.url.trim() !== ''
-      );
 
-      // Add servers and links to the form data
+      // Add servers to the form data
       transformedData.servers = filteredServers;
-      transformedData.links = filteredLinks;
 
       const result = await onSubmit(transformedData);
       
@@ -185,7 +173,7 @@ const MovieForm: React.FC<MovieFormProps> = ({
   };
 
   const addServer = () => {
-    setServers([...servers, { name: '', url: '', quality: '', language: '' }]);
+    setServers([...servers, { name: '', url: '', quality: '', language: '', videoType: 'mp4' }]);
   };
 
   const removeServer = (index: number) => {
@@ -196,20 +184,6 @@ const MovieForm: React.FC<MovieFormProps> = ({
     const newServers = [...servers];
     newServers[index] = { ...newServers[index], [field]: value };
     setServers(newServers);
-  };
-
-  const addLink = () => {
-    setLinks([...links, { title: '', url: '', type: '', quality: '' }]);
-  };
-
-  const removeLink = (index: number) => {
-    setLinks(links.filter((_, i) => i !== index));
-  };
-
-  const updateLink = (index: number, field: keyof Link, value: string) => {
-    const newLinks = [...links];
-    newLinks[index] = { ...newLinks[index], [field]: value };
-    setLinks(newLinks);
   };
 
   const renderField = (field: FormField) => {
@@ -367,42 +341,73 @@ const MovieForm: React.FC<MovieFormProps> = ({
                 <div className="row mt-4">
                   <div className="col-12">
                     <div className="d-flex justify-content-between align-items-center mb-3">
-                      <h4>Servers</h4>
+                      <h4>Movie Servers</h4>
                       <button
                         type="button"
                         className="btn btn-sm btn-primary"
                         onClick={addServer}
                       >
+                        <i className="ti ti-plus me-1"></i>
                         Add Server
                       </button>
                     </div>
+                    
+                    {servers.length === 0 && (
+                      <div className="alert alert-info" role="alert">
+                        <i className="ti ti-info-circle me-2"></i>
+                        No servers added yet. Click "Add Server" to add streaming servers for this movie.
+                      </div>
+                    )}
                     
                     {servers.map((server, index) => (
                       <div key={index} className="card mb-3">
                         <div className="card-body">
                           <div className="row">
-                            <div className="col-md-3">
-                              <label className="sign__label">Server Name</label>
+                            <div className="col-md-2">
+                              <label className="sign__label">
+                                Server Name <span className="text-danger">*</span>
+                              </label>
                               <input
                                 type="text"
                                 className="sign__input"
                                 value={server.name}
                                 onChange={(e) => updateServer(index, 'name', e.target.value)}
-                                placeholder="Server name"
+                                placeholder="e.g., Server 1"
+                                required
                               />
                             </div>
                             <div className="col-md-3">
-                              <label className="sign__label">URL</label>
+                              <label className="sign__label">
+                                URL <span className="text-danger">*</span>
+                              </label>
                               <input
                                 type="url"
                                 className="sign__input"
                                 value={server.url}
                                 onChange={(e) => updateServer(index, 'url', e.target.value)}
-                                placeholder="Server URL"
+                                placeholder="https://example.com/video.mp4"
+                                required
                               />
                             </div>
                             <div className="col-md-2">
-                              <label className="sign__label">Quality</label>
+                              <label className="sign__label">
+                                Video Type <span className="text-danger">*</span>
+                              </label>
+                              <select
+                                className="sign__select"
+                                value={server.videoType}
+                                onChange={(e) => updateServer(index, 'videoType', e.target.value as 'mp4' | 'iframe' | 'youtube')}
+                                required
+                              >
+                                <option value="mp4">MP4 Direct</option>
+                                <option value="iframe">iFrame Embed</option>
+                                <option value="youtube">YouTube</option>
+                              </select>
+                            </div>
+                            <div className="col-md-2">
+                              <label className="sign__label">
+                                Quality
+                              </label>
                               <input
                                 type="text"
                                 className="sign__input"
@@ -412,7 +417,9 @@ const MovieForm: React.FC<MovieFormProps> = ({
                               />
                             </div>
                             <div className="col-md-2">
-                              <label className="sign__label">Language</label>
+                              <label className="sign__label">
+                                Language
+                              </label>
                               <input
                                 type="text"
                                 className="sign__input"
@@ -421,88 +428,31 @@ const MovieForm: React.FC<MovieFormProps> = ({
                                 placeholder="EN, ES, etc."
                               />
                             </div>
-                            <div className="col-md-2 d-flex align-items-end">
+                            <div className="col-md-1 d-flex align-items-end">
                               <button
                                 type="button"
                                 className="btn btn-sm btn-danger"
                                 onClick={() => removeServer(index)}
+                                title="Remove Server"
                               >
-                                Remove
+                                <i className="ti ti-trash"></i>
                               </button>
                             </div>
                           </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Links Section */}
-                <div className="row mt-4">
-                  <div className="col-12">
-                    <div className="d-flex justify-content-between align-items-center mb-3">
-                      <h4>Links</h4>
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-primary"
-                        onClick={addLink}
-                      >
-                        Add Link
-                      </button>
-                    </div>
-                    
-                    {links.map((link, index) => (
-                      <div key={index} className="card mb-3">
-                        <div className="card-body">
-                          <div className="row">
-                            <div className="col-md-3">
-                              <label className="sign__label">Link Title</label>
-                              <input
-                                type="text"
-                                className="sign__input"
-                                value={link.title}
-                                onChange={(e) => updateLink(index, 'title', e.target.value)}
-                                placeholder="Link title"
-                              />
-                            </div>
-                            <div className="col-md-3">
-                              <label className="sign__label">URL</label>
-                              <input
-                                type="url"
-                                className="sign__input"
-                                value={link.url}
-                                onChange={(e) => updateLink(index, 'url', e.target.value)}
-                                placeholder="Link URL"
-                              />
-                            </div>
-                            <div className="col-md-2">
-                              <label className="sign__label">Type</label>
-                              <input
-                                type="text"
-                                className="sign__input"
-                                value={link.type || ''}
-                                onChange={(e) => updateLink(index, 'type', e.target.value)}
-                                placeholder="Download, Stream, etc."
-                              />
-                            </div>
-                            <div className="col-md-2">
-                              <label className="sign__label">Quality</label>
-                              <input
-                                type="text"
-                                className="sign__input"
-                                value={link.quality || ''}
-                                onChange={(e) => updateLink(index, 'quality', e.target.value)}
-                                placeholder="HD, 4K, etc."
-                              />
-                            </div>
-                            <div className="col-md-2 d-flex align-items-end">
-                              <button
-                                type="button"
-                                className="btn btn-sm btn-danger"
-                                onClick={() => removeLink(index)}
-                              >
-                                Remove
-                              </button>
+                          
+                          {/* Video Type Help Text */}
+                          <div className="row mt-2">
+                            <div className="col-12">
+                              <div className="video-type-guide">
+                                <small className="text-muted">
+                                  <strong>Video Type Guide:</strong>
+                                  <ul className="mt-1 mb-0">
+                                    <li><strong>MP4 Direct:</strong> Direct video file URL (ends with .mp4, .webm, etc.)</li>
+                                    <li><strong>iFrame Embed:</strong> Embed code from video hosting sites</li>
+                                    <li><strong>YouTube:</strong> YouTube video ID or full URL</li>
+                                  </ul>
+                                </small>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -525,7 +475,7 @@ const MovieForm: React.FC<MovieFormProps> = ({
                             Saving...
                           </>
                         ) : (
-                          'Save'
+                          'Save Movie'
                         )}
                       </button>
                       <button

@@ -58,7 +58,7 @@ const staticFields = [
     label: 'Trailer URL',
     type: 'text' as const,
     required: false,
-    placeholder: 'Enter trailer video URL'
+    placeholder: 'Enter trailer video URL (YouTube, Vimeo, etc.)'
   },
   {
     name: 'duration',
