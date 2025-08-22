@@ -8,10 +8,10 @@ const navigationItems = [
     label: 'Home',
     href: '/'
   },
-  {
-    label: 'Movies',
-    href: '/allmovies'
-  },
+  // {
+  //   label: 'Movies',
+  //   href: '/allmovies'
+  // },
   {
     label: 'About',
     href: '/about'
@@ -127,7 +127,7 @@ export default function Header() {
                     aria-expanded="false"
                   >
                     <i className="ti ti-user"></i>
-                    <span>Nickname</span>
+                    {/* <span>Nickname</span> */}
                   </a>
 
                   <ul className="dropdown-menu dropdown-menu-end header__dropdown-menu header__dropdown-menu--user">
