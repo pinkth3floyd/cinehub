@@ -118,7 +118,7 @@ export default function Header() {
                 </div>
 
                 {/* User Profile Dropdown */}
-                <div className="header__profile">
+                {/* <div className="header__profile">
                   <a 
                     className="header__sign-in header__sign-in--user" 
                     href="#" 
@@ -127,7 +127,7 @@ export default function Header() {
                     aria-expanded="false"
                   >
                     <i className="ti ti-user"></i>
-                    {/* <span>Nickname</span> */}
+                    <span>Nickname</span>
                   </a>
 
                   <ul className="dropdown-menu dropdown-menu-end header__dropdown-menu header__dropdown-menu--user">
@@ -140,7 +140,7 @@ export default function Header() {
                       </li>
                     ))}
                   </ul>
-                </div>
+                </div> */}
               </div>
 
               {/* Mobile Menu Button */}
