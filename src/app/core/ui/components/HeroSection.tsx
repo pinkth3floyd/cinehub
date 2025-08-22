@@ -221,9 +221,14 @@ export default function HeroSection() {
                         </p>
                         <div className="hero__actions">
                           {slide.id !== 'no-movies' ? (
-                            <Link href={`/details/${slide.id}`} className="hero__btn">
-                              <span>Watch now</span>
+                            <div>
+                              <Link href={`/details/${slide.id}`} className="hero__btn">
+                                <span>Watch now</span>
+                              </Link>
+                              <Link href="/catalog" className="hero__btn">
+                              <span>Browse Movies</span>
                             </Link>
+                            </div>
                           ) : (
                             <Link href="/catalog" className="hero__btn">
                               <span>Browse Movies</span>

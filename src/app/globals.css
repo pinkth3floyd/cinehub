@@ -3161,3 +3161,364 @@ a {
 .hero-error__content .btn {
   margin-top: 10px;
 }
+
+/* Enhanced Catalog Page Styles */
+.catalog__search-section {
+  margin-bottom: 2rem;
+}
+
+.catalog__search-form {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.search-input-group {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.search-input-wrapper {
+  position: relative;
+  flex: 1;
+}
+
+.search-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6c757d;
+  z-index: 2;
+}
+
+.search-input {
+  padding-left: 3rem;
+  padding-right: 3rem;
+  border-radius: 8px;
+  border: 2px solid #2a2a2a;
+  background: #1a1a1a;
+  color: #ffffff;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.search-input:focus {
+  border-color: #2f80ed;
+  box-shadow: 0 0 0 3px rgba(47, 128, 237, 0.1);
+  background: #1a1a1a;
+  color: #ffffff;
+}
+
+.search-input::placeholder {
+  color: #6c757d;
+}
+
+.search-clear-btn {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #6c757d;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.search-clear-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.search-submit-btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.search-submit-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(47, 128, 237, 0.3);
+}
+
+/* Filter Section */
+.catalog__filters-section {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: linear-gradient(145deg, #1a1a1a, #2a2a2a);
+  border-radius: 12px;
+  border: 1px solid #333;
+}
+
+.catalog__filter-controls {
+  width: 100%;
+}
+
+.filter-select {
+  background: #1a1a1a;
+  border: 2px solid #333;
+  color: #ffffff;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.filter-select:focus {
+  border-color: #2f80ed;
+  box-shadow: 0 0 0 3px rgba(47, 128, 237, 0.1);
+  background: #1a1a1a;
+  color: #ffffff;
+}
+
+.filter-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.filter-select option {
+  background: #1a1a1a;
+  color: #ffffff;
+  padding: 0.5rem;
+}
+
+/* Filter Actions */
+.catalog__filter-actions {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #333;
+}
+
+.catalog__results-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.results-count {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.active-filters-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  background: rgba(47, 128, 237, 0.2);
+  color: #2f80ed;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.active-filters-indicator i {
+  font-size: 14px;
+}
+
+/* Loading States */
+.catalog__loading,
+.catalog__no-results {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  text-align: center;
+}
+
+.loading-content {
+  color: #888;
+}
+
+.loading-content .spinner-border {
+  color: #2f80ed;
+}
+
+.loading-content p {
+  color: #888;
+  margin-top: 1rem;
+  font-size: 16px;
+}
+
+/* Error State */
+.catalog__error {
+  margin: 2rem 0;
+}
+
+.catalog__error .alert {
+  background: rgba(220, 53, 69, 0.1);
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  color: #dc3545;
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.catalog__error .btn-outline-danger {
+  border-color: #dc3545;
+  color: #dc3545;
+  background: transparent;
+  transition: all 0.3s ease;
+}
+
+.catalog__error .btn-outline-danger:hover {
+  background: #dc3545;
+  color: #ffffff;
+}
+
+/* No Results State */
+.catalog__no-results {
+  padding: 3rem 1rem;
+}
+
+.no-results-content {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.no-results-content i {
+  font-size: 64px;
+  color: #6c757d;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.no-results-content h3 {
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+  font-size: 24px;
+}
+
+.no-results-content p {
+  color: #999;
+  margin-bottom: 1.5rem;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.no-results-content .btn {
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+}
+
+/* Load More Loading */
+.catalog__load-more-loading {
+  margin: 2rem 0;
+  padding: 1rem;
+  text-align: center;
+  color: #888;
+}
+
+.catalog__load-more-loading .spinner-border {
+  color: #2f80ed;
+}
+
+/* Movies Grid Container */
+.catalog__movies {
+  margin-top: 2rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .search-input-group {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .search-submit-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .catalog__filter-controls .row {
+    margin: 0;
+  }
+  
+  .catalog__filter-controls .col-md-2 {
+    margin-bottom: 1rem;
+  }
+  
+  .catalog__results-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .catalog__filter-actions .text-end {
+    text-align: left !important;
+    margin-top: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .catalog__filters-section {
+    padding: 1rem;
+  }
+  
+  .filter-select {
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+  
+  .search-input {
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+}
+
+/* Dark theme enhancements */
+.catalog__filters-section {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.filter-select:hover:not(:disabled) {
+  border-color: #2f80ed;
+  background: #1a1a1a;
+}
+
+/* Animation for filter changes */
+.catalog__movies {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hover effects for interactive elements */
+.search-clear-btn,
+.filter-select,
+.search-submit-btn {
+  transition: all 0.2s ease;
+}
+
+.search-clear-btn:hover,
+.filter-select:hover:not(:disabled),
+.search-submit-btn:hover {
+  transform: translateY(-1px);
+}
+
+/* Focus states for accessibility */
+.search-input:focus,
+.filter-select:focus,
+.search-submit-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(47, 128, 237, 0.3);
+}
