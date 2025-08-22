@@ -226,12 +226,12 @@ export default function HeroSection() {
                                 <span>Watch now</span>
                               </Link>
                               <Link href="/catalog" className="hero__btn">
-                              <span>Browse Movies</span>
+                              <span>Browse</span>
                             </Link>
                             </div>
                           ) : (
                             <Link href="/catalog" className="hero__btn">
-                              <span>Browse Movies</span>
+                              <span>Browse </span>
                             </Link>
                           )}
                         </div>
