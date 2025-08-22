@@ -130,7 +130,7 @@ const CrudTable: React.FC<CrudTableProps> = ({
           </h3>
           <div className="dashbox__wrap">
             {addLink && (
-              <Link className="dashbox__more" href={addLink}>
+              <Link className="dashbox__more btn btn-primary " href={addLink}>
                 Add New
               </Link>
             )}
