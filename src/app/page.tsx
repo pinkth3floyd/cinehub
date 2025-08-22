@@ -95,40 +95,40 @@ export default async function Home() {
       </section>
       
       {/* Latest Releases Section */}
-      <MovieSection
+      {/* <MovieSection
         title="Latest Releases"
         subtitle="Discover the newest movies added to our collection"
         movies={latestMovies}
         columns={6}
         variant="default"
-      />
+      /> */}
       
       {/* Top Rated Section */}
-      <MovieSection
+      {/* <MovieSection
         title="Top Rated"
         subtitle="Highest rated movies by our community"
         movies={topRatedMovies}
         columns={6}
         variant="default"
-      />
+      /> */}
       
       {/* Recommended Section */}
-      <MovieSection
+      {/* <MovieSection
         title="Recommended for You"
         subtitle="Personalized recommendations based on your preferences"
         movies={[...featuredMovies, ...topRatedMovies].slice(0, 12)}
         columns={6}
         variant="default"
-      />
+      /> */}
       
       {/* Trending Section */}
-      <MovieSection
+      {/* <MovieSection
         title="Trending Now"
         subtitle="Movies that are gaining popularity"
         movies={latestMovies.filter(movie => (movie.rating || 0) >= 7).slice(0, 12)}
         columns={6}
         variant="default"
-      />
+      /> */}
       
       <Footer />
     </>
