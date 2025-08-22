@@ -82,11 +82,11 @@ export default async function Home() {
                 </div>
                 <div className="movie-info">
                   <h3 className="movie-title">{movie.title}</h3>
-                  <div className="movie-meta">
-                    <span className="episode">Ep {Math.floor(Math.random() * 20) + 1}</span>
-                    <span className="quality">HD</span>
-                    <span className="language">SUB</span>
-                  </div>
+                    <div className="movie-meta">
+                      <span className="episode">Duration: {movie.duration}</span>
+                      <span className="quality">Quality: {movie.server || 'HD'}</span>
+                      {/* <span className="language">Language: {movie.servers[0]?.language || 'English'}</span> */}
+                    </div>
                 </div>
               </Link>
             ))}
