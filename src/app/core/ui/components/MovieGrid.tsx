@@ -22,54 +22,8 @@ export interface MovieGridProps {
   hasMore?: boolean;
 }
 
-// Sample movie data for demonstration
-const sampleMovies = [
-  {
-    id: '1',
-    title: 'I Dream in Another Lan...',
-    rating: 8.4,
-    genres: ['Action', 'Triler'],
-    poster: '/core/assets/img/covers/cover1.jpg'
-  },
-  {
-    id: '2',
-    title: 'Benched',
-    rating: 7.1,
-    genres: ['Comedy'],
-    poster: '/core/assets/img/covers/cover2.jpg'
-  },
-  {
-    id: '3',
-    title: 'Whitney',
-    rating: 6.3,
-    genres: ['Romance', 'Drama', 'Music'],
-    poster: '/core/assets/img/covers/cover3.jpg'
-  },
-  {
-    id: '4',
-    title: 'Blindspotting',
-    rating: 6.9,
-    genres: ['Comedy', 'Drama'],
-    poster: '/core/assets/img/covers/cover4.jpg'
-  },
-  {
-    id: '5',
-    title: 'I Dream in Another Lan...',
-    rating: 8.4,
-    genres: ['Action', 'Triler'],
-    poster: '/core/assets/img/covers/cover5.jpg'
-  },
-  {
-    id: '6',
-    title: 'Benched',
-    rating: 7.1,
-    genres: ['Comedy'],
-    poster: '/core/assets/img/covers/cover6.jpg'
-  }
-];
-
 export default function MovieGrid({ 
-  movies = sampleMovies, 
+  movies = [], 
   title, 
   subtitle,
   columns = 6,
@@ -83,6 +37,10 @@ export default function MovieGrid({
     if (rating >= 7.0) return 'yellow';
     return 'red';
   };
+
+  if (!movies || movies.length === 0) {
+    return null;
+  }
 
   return (
     <div className="movie-grid-section">
@@ -98,42 +56,44 @@ export default function MovieGrid({
             
             <div className="movie-grid">
               {movies.map((movie, index) => (
-                <div key={movie.id} className="movie-card">
-                  <div className="movie-card__poster">
-                    <img 
-                      src={movie.poster || `/core/assets/img/covers/cover${(index % 6) + 1}.jpg`}
-                      alt={movie.title}
-                      className="movie-card__image"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = `/core/assets/img/covers/cover${(index % 6) + 1}.jpg`;
-                      }}
-                    />
-                    
-                    {/* Rating Badge */}
-                    <div className={`movie-card__rating movie-card__rating--${getRatingClass(movie.rating || 0)}`}>
-                      {movie.rating?.toFixed(1) || '8.0'}
+                <Link key={movie.id} href={`/details/${movie.id}`} className="movie-card-link">
+                  <div className="movie-card">
+                    <div className="movie-card__poster">
+                      <img 
+                        src={movie.poster || `/core/assets/img/covers/cover${(index % 6) + 1}.jpg`}
+                        alt={movie.title}
+                        className="movie-card__image"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = `/core/assets/img/covers/cover${(index % 6) + 1}.jpg`;
+                        }}
+                      />
+                      
+                      {/* Rating Badge */}
+                      <div className={`movie-card__rating movie-card__rating--${getRatingClass(movie.rating || 0)}`}>
+                        {movie.rating?.toFixed(1) || '8.0'}
+                      </div>
+                      
+                      {/* Play Button Overlay */}
+                      <div className="movie-card__overlay">
+                        <div className="movie-card__play">
+                          <i className="ti ti-player-play"></i>
+                        </div>
+                      </div>
                     </div>
                     
-                    {/* Play Button Overlay */}
-                    <div className="movie-card__overlay">
-                      <button className="movie-card__play">
-                        <i className="ti ti-player-play"></i>
-                      </button>
+                    <div className="movie-card__content">
+                      <h3 className="movie-card__title">{movie.title}</h3>
+                      <div className="movie-card__genres">
+                        {movie.genres?.map((genre, genreIndex) => (
+                          <span key={genreIndex} className="movie-card__genre">
+                            {genre}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                  
-                  <div className="movie-card__content">
-                    <h3 className="movie-card__title">{movie.title}</h3>
-                    <div className="movie-card__genres">
-                      {movie.genres?.map((genre, genreIndex) => (
-                        <span key={genreIndex} className="movie-card__genre">
-                          {genre}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+                </Link>
               ))}
             </div>
             

@@ -8,10 +8,10 @@ const navigationItems = [
     label: 'Home',
     href: '/'
   },
-  // {
-  //   label: 'Movies',
-  //   href: '/allmovies'
-  // },
+  {
+    label: 'Movies',
+    href: '/catalog'
+  },
   {
     label: 'About',
     href: '/about'
@@ -37,6 +37,7 @@ const languageItems = [
 ];
 
 const userMenuItems = [
+  { label: 'Profile', href: '/profile', icon: 'ti ti-ghost' },
   { label: 'Profile', href: '/profile', icon: 'ti ti-ghost' },
   { label: 'Subscription', href: '/profile', icon: 'ti ti-stereo-glasses' },
   { label: 'Favorites', href: '/profile', icon: 'ti ti-bookmark' },

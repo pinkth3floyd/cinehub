@@ -15,6 +15,7 @@ interface MovieSectionProps {
     status: string;
     featured: boolean;
     createdAt: Date;
+    genres?: string[];
   }>;
   columns?: 2 | 3 | 4 | 6;
   variant?: 'default' | 'hero' | 'carousel';
@@ -41,9 +42,9 @@ export default function MovieSection({
   const transformedMovies = movies.map(movie => ({
     id: movie.id,
     title: movie.title,
-    cover: movie.poster || movie.banner || 'cover1.jpg',
+    poster: movie.poster || movie.banner || `/core/assets/img/covers/cover1.jpg`,
     rating: movie.rating || 0,
-    categories: ['Movie'] // You can enhance this with actual categories
+    genres: movie.genres || ['Movie'] // Use actual genres if available
   }));
 
   return (
