@@ -215,39 +215,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Partners */}
-      <section className="section section--pt">
-        <div className="container">
-          <div className="row">
-            <div className="col-12 col-xl-9">
-              <h2 className="section__title">Our Partners</h2>
-              <p className="section__text">
-                We strive for long-term cooperation with our partners, and our team is always ready to meet and 
-                consider new opportunities for mutual benefits. If you would like to become our partner, we are 
-                always open to new offers and look forward to hearing from you.{' '}
-                <Link href="/contact">Become a partner</Link>
-              </p>
-            </div>
-          </div>
-
-          <div className="row">
-            {partners.map((partner, index) => (
-              <div key={index} className="col-6 col-sm-4 col-lg-2">
-                <a href="#" className="partner">
-                  <Image 
-                    src={`/core/assets/img/partners/${partner}`} 
-                    alt="Partner" 
-                    width={120} 
-                    height={60}
-                    className="partner__img"
-                  />
-                </a>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
+    
       <Footer />
     </>
   );
