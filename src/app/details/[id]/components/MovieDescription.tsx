@@ -52,7 +52,7 @@ export default function MovieDescription({ movie }: MovieDescriptionProps) {
         </div>
       )}
 
-      {movie.content && (
+      {/* {movie.content && (
         <div className="movie-description__content">
           <h3 className="movie-description__subtitle">Plot</h3>
           <div 
@@ -60,7 +60,7 @@ export default function MovieDescription({ movie }: MovieDescriptionProps) {
             dangerouslySetInnerHTML={{ __html: movie.content }}
           />
         </div>
-      )}
+      )} */}
 
       <div className="movie-description__details">
         <div className="movie-description__detail-item">
