@@ -355,47 +355,10 @@ const AdminDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Real-Time Analytics and Summary */}
+      {/* Real-Time Analytics */}
       <div className="row mt-4">
-        <div className="col-12 col-xl-6">
+        <div className="col-12">
           <RealTimeAnalytics />
-        </div>
-        <div className="col-12 col-xl-6">
-          <Dashbox title="Analytics Summary" icon="ti ti-chart-bar">
-            <div className="dashbox__content">
-              <div className="row">
-                <div className="col-12 col-sm-6">
-                  <div className="analytics-summary-item">
-                    <div className="analytics-summary-item__icon">
-                      <i className="ti ti-trending-up"></i>
-                    </div>
-                    <div className="analytics-summary-item__content">
-                      <div className="analytics-summary-item__label">Avg. Bounce Rate</div>
-                      <div className="analytics-summary-item__value">
-                        {stats?.data?.analytics?.avgBounceRate?.toFixed(1) || '0'}%
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-12 col-sm-6">
-                  <div className="analytics-summary-item">
-                    <div className="analytics-summary-item__icon">
-                      <i className="ti ti-clock"></i>
-                    </div>
-                    <div className="analytics-summary-item__content">
-                      <div className="analytics-summary-item__label">Avg. Session Duration</div>
-                      <div className="analytics-summary-item__value">
-                        {stats?.data?.analytics?.avgSessionDuration 
-                          ? `${Math.floor(stats.data.analytics.avgSessionDuration / 60)}:${(stats.data.analytics.avgSessionDuration % 60).toString().padStart(2, '0')}`
-                          : '0:00'
-                        }
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Dashbox>
         </div>
       </div>
     </>
