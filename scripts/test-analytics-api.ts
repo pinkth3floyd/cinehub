@@ -15,8 +15,9 @@ async function testAnalyticsAPI() {
       console.log('   Top Country:', analyticsData.countries[0].country, '(', analyticsData.countries[0].sessions, 'sessions)');
     }
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     console.log('   ❌ Failed:', error);
-    console.log('   Error details:', error.message);
+    console.log('   Error details:', errorMessage);
   }
 
   console.log('\n2. Testing getRealTimeAnalyticsData...');
@@ -27,8 +28,9 @@ async function testAnalyticsAPI() {
     console.log('   Current Page Views:', realTimeData.currentPageViews);
     console.log('   Top Pages:', realTimeData.topPages.length);
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     console.log('   ❌ Failed:', error);
-    console.log('   Error details:', error.message);
+    console.log('   Error details:', errorMessage);
   }
 
   console.log('\n🔧 If both tests failed with DECODER errors:');

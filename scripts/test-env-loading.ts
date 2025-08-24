@@ -20,7 +20,8 @@ if (process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
     console.log('   Project ID:', parsed.project_id);
     console.log('   Client Email:', parsed.client_email);
   } catch (error) {
-    console.log('   ❌ JSON parsing failed:', error.message);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.log('   ❌ JSON parsing failed:', errorMessage);
   }
 }
 
@@ -64,8 +65,9 @@ async function testClient() {
       console.log('   ❌ No service account key available');
     }
   } catch (error) {
-    console.log('   ❌ Error:', error.message);
-    if (error.message.includes('PERMISSION_DENIED')) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.log('   ❌ Error:', errorMessage);
+    if (errorMessage.includes('PERMISSION_DENIED')) {
       console.log('   💡 Service account needs access to the GA4 property');
     }
   }

@@ -39,17 +39,6 @@ async function checkGA4Property() {
           projectId: credentials.project_id,
         });
 
-        // Try to list properties first
-        const [properties] = await client.listProperties();
-        console.log(`   ✅ Successfully connected! Found ${properties.length} properties`);
-        
-        if (properties.length > 0) {
-          console.log('   Available properties:');
-          properties.forEach((prop, index) => {
-            console.log(`     ${index + 1}. ${prop.displayName} (${prop.name})`);
-          });
-        }
-
         // Try to get a simple metric
         const [response] = await client.runReport({
           property: propertyId,
@@ -71,15 +60,17 @@ async function checkGA4Property() {
         break;
         
       } catch (error) {
-        console.log(`   ❌ Failed: ${error.message}`);
-        if (error.message.includes('PERMISSION_DENIED')) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.log(`   ❌ Failed: ${errorMessage}`);
+        if (errorMessage.includes('PERMISSION_DENIED')) {
           console.log('   💡 This suggests the service account needs access to this property');
         }
       }
     }
 
   } catch (error) {
-    console.log('❌ Error parsing service account key:', error.message);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.log('❌ Error parsing service account key:', errorMessage);
   }
 
   console.log('\n🔧 Next Steps:');

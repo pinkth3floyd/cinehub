@@ -91,12 +91,13 @@ async function findPropertyId() {
         break;
         
       } catch (error) {
-        if (error.message.includes('PERMISSION_DENIED')) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (errorMessage.includes('PERMISSION_DENIED')) {
           console.log(`   ❌ Permission denied`);
-        } else if (error.message.includes('NOT_FOUND')) {
+        } else if (errorMessage.includes('NOT_FOUND')) {
           console.log(`   ❌ Property not found`);
         } else {
-          console.log(`   ❌ ${error.message}`);
+          console.log(`   ❌ ${errorMessage}`);
         }
       }
     }
@@ -115,7 +116,8 @@ async function findPropertyId() {
     }
 
   } catch (error) {
-    console.log('❌ Error:', error.message);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.log('❌ Error:', errorMessage);
   }
 }
 

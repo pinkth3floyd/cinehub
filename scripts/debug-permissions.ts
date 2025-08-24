@@ -88,13 +88,14 @@ async function debugPermissions() {
         break;
         
       } catch (error) {
-        console.log(`   ❌ Failed: ${error.message}`);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.log(`   ❌ Failed: ${errorMessage}`);
         
-        if (error.message.includes('PERMISSION_DENIED')) {
+        if (errorMessage.includes('PERMISSION_DENIED')) {
           console.log('   💡 Permission denied - check if property ID is correct');
-        } else if (error.message.includes('NOT_FOUND')) {
+        } else if (errorMessage.includes('NOT_FOUND')) {
           console.log('   💡 Property not found - check if property ID is correct');
-        } else if (error.message.includes('INVALID_ARGUMENT')) {
+        } else if (errorMessage.includes('INVALID_ARGUMENT')) {
           console.log('   💡 Invalid property ID format');
         }
       }
@@ -111,7 +112,8 @@ async function debugPermissions() {
     }
 
   } catch (error) {
-    console.log('❌ Error:', error.message);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.log('❌ Error:', errorMessage);
   }
 }
 

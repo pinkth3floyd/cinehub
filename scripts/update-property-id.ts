@@ -47,7 +47,8 @@ function updatePropertyId() {
     console.log('3. Check the admin dashboard at /admin');
     
   } catch (error) {
-    console.log('❌ Error updating .env.local:', error.message);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.log('❌ Error updating .env.local:', errorMessage);
   }
 }
 
