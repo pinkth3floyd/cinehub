@@ -35,6 +35,7 @@ export default function AdminLayout({
         <link rel="stylesheet" href="/core/assets/css/bootstrap.min.css" />
         <link rel="stylesheet" href="/core/assets/css/slimselect.css" />
         <link rel="stylesheet" href="/core/assets/css/admin.css" />
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
         {/* Icon font */}
         <link rel="stylesheet" href="/core/assets/webfont/tabler-icons.min.css" />

@@ -42,6 +42,8 @@ export { default as PricingSection } from './components/PricingSection';
 export { default as MovieForm } from './components/MovieForm';
 export { default as Form } from './components/Form';
 export { default as Breadcrumbs } from './components/Breadcrumbs';
+export { default as AnalyticsMap } from './components/AnalyticsMap';
+export { default as RealTimeAnalytics } from './components/RealTimeAnalytics';
 
 // Types - Elements
 export type { MovieItemProps } from './elements/MovieItem';
