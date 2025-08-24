@@ -1,0 +1,21 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://cinehub.com/sitemap.xml
+
+# Disallow admin and private areas
+Disallow: /admin/
+Disallow: /login
+Disallow: /api/
+
+# Allow important pages
+Allow: /catalog
+Allow: /details/
+Allow: /about
+Allow: /contact
+Allow: /privacy
+Allow: /faq
+
+# Crawl delay for respectful crawling
+Crawl-delay: 1

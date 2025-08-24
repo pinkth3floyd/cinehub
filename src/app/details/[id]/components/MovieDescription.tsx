@@ -1,21 +1,45 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
+
+interface Movie {
+  id: string;
+  title: string;
+  description?: string | null;
+  poster?: string | null;
+  banner?: string | null;
+  trailer?: string | null;
+  duration?: number | null;
+  rating?: number | null;
+  releaseDate?: Date | null;
+  status: string;
+  featured: boolean;
+  typeId?: string | null;
+  yearId?: string | null;
+  genreId?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  links?: Array<{
+    id: string;
+    title: string;
+    url: string;
+    type?: string | null;
+  }>;
+}
 
 interface MovieDescriptionProps {
-  movie: any;
+  movie: Movie;
 }
 
 export default function MovieDescription({ movie }: MovieDescriptionProps) {
-  const formatDuration = (minutes?: number) => {
+  const formatDuration = (minutes?: number | null) => {
     if (!minutes) return 'N/A';
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
   };
 
-  const formatDate = (date?: Date) => {
+  const formatDate = (date?: Date | null) => {
     if (!date) return 'N/A';
     return new Date(date).getFullYear();
   };
@@ -96,7 +120,7 @@ export default function MovieDescription({ movie }: MovieDescriptionProps) {
         <div className="movie-description__links">
           <h3 className="movie-description__subtitle">External Links</h3>
           <div className="movie-description__links-list">
-            {movie.links.map((link: any) => (
+            {movie.links.map((link) => (
               <a
                 key={link.id}
                 href={link.url}
